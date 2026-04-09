@@ -9,7 +9,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { usePlayerStore } from "../stores/playerStore";
 
 // TODO: Switch to https://www.wmdm.io for production
-const STORE_URL = "https://test.wmdm.io";
+const STORE_URL = "https://www.wmdm.io";
 
 export default function StorePage() {
   const stop = usePlayerStore((s) => s.stop);

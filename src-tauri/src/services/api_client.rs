@@ -27,7 +27,7 @@ impl ApiClient {
         Self {
             client,
             // TODO: Switch to production URL when DesktopApi module is deployed
-            base_url: "https://test.wemakedancemusic.com/rest".to_string(),
+            base_url: "https://www.wemakedancemusic.com/rest".to_string(),
             token: Arc::new(RwLock::new(None)),
             store_code: Arc::new(RwLock::new(None)),
         }

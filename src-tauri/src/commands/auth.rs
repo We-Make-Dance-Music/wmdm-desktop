@@ -327,9 +327,9 @@ pub async fn get_auth_token(
 
     let base_url = match &store_code {
         Some(code) if code != "default" => {
-            format!("https://test.wemakedancemusic.com/rest/{}", code)
+            format!("https://www.wemakedancemusic.com/rest/{}", code)
         }
-        _ => "https://test.wemakedancemusic.com/rest".to_string(),
+        _ => "https://www.wemakedancemusic.com/rest".to_string(),
     };
 
     Ok(Some(AuthTokenInfo {
