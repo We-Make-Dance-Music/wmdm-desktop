@@ -156,6 +156,7 @@ export interface AppSettings {
   launchAtStartup: boolean;
   notificationsEnabled: boolean;
   theme: "dark";
+  firstRunComplete: boolean;
 }
 
 // --- API Response Wrappers ---

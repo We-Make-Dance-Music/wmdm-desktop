@@ -180,3 +180,15 @@ pub async fn get_download_queue(
 
     Ok(items)
 }
+
+/// Clear completed and errored downloads from the database.
+#[tauri::command]
+pub async fn clear_download_history(
+    db: State<'_, SqlitePool>,
+) -> Result<(), String> {
+    sqlx::query("DELETE FROM download_queue WHERE status IN ('complete', 'error')")
+        .execute(db.inner())
+        .await
+        .map_err(|e| format!("DB error: {e}"))?;
+    Ok(())
+}

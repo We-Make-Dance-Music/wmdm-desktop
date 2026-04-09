@@ -48,16 +48,16 @@ function RelatedProductRow({ product, isOwned }: { product: StoreProduct; isOwne
         {product.streamUrl && (
           <button
             onClick={handlePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
           >
             {isCurrentlyPlaying ? (
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="white">
-                <rect x="2" y="1" width="2" height="8" rx="0.5" />
-                <rect x="6" y="1" width="2" height="8" rx="0.5" />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="white">
+                <rect x="4" y="3" width="3.5" height="12" rx="0.5" />
+                <rect x="10.5" y="3" width="3.5" height="12" rx="0.5" />
               </svg>
             ) : (
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="white">
-                <path d="M3 1v8l6-4-6-4z" />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="white">
+                <path d="M5 2v14l10-7-10-7z" />
               </svg>
             )}
           </button>

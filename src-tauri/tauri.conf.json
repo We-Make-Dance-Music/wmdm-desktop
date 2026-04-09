@@ -49,9 +49,9 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFOURCM0RDNDNGMUZCN0UKUldSKysvRkQzTE9kTGtXZXd5anl0bDI1QWVHd2FENWN1YmV6ek8rRUh0VGc2NGZBamhkSHNxTlIK",
       "endpoints": [
-        "https://www.wemakedancemusic.com/rest/V1/wmdm/desktop/version?platform={{target}}&currentVersion={{current_version}}"
+        "https://github.com/We-Make-Dance-Music/wmdm-desktop/releases/latest/download/latest.json"
       ]
     }
   }

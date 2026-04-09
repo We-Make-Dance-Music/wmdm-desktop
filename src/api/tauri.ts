@@ -17,6 +17,31 @@ import type {
   StoreResult,
 } from "../types";
 
+/**
+ * Wrap an authenticated invoke call — if it returns a 401 Unauthorized error,
+ * clear the session and redirect to login instead of showing a raw error.
+ */
+async function authedInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  try {
+    return await invoke<T>(cmd, args);
+  } catch (err) {
+    const msg = String(err);
+    if (msg.includes("401") && msg.includes("Unauthorized")) {
+      // Token expired — clear local state and force re-login
+      try { await invoke<void>("logout"); } catch { /* best effort */ }
+      // Dynamically import to avoid circular deps
+      const { useAuthStore } = await import("../stores/authStore");
+      useAuthStore.setState({
+        user: null,
+        isAuthenticated: false,
+        error: "Your session has expired. Please sign in again.",
+      });
+      throw new Error("Session expired — please sign in again.");
+    }
+    throw err;
+  }
+}
+
 // --- Auth ---
 
 export async function login(
@@ -59,38 +84,38 @@ export async function syncProducts(
   page: number,
   pageSize: number
 ): Promise<SyncResult> {
-  return invoke<SyncResult>("sync_products", { page, pageSize });
+  return authedInvoke<SyncResult>("sync_products", { page, pageSize });
 }
 
 export async function syncDelta(since: string): Promise<DeltaSyncResult> {
-  return invoke<DeltaSyncResult>("sync_delta", { since });
+  return authedInvoke<DeltaSyncResult>("sync_delta", { since });
 }
 
 export async function searchProducts(
   query: string,
   filters: Record<string, unknown>
 ): Promise<Product[]> {
-  return invoke<Product[]>("search_products", { query, filters });
+  return authedInvoke<Product[]>("search_products", { query, filters });
 }
 
 export async function getProduct(id: number): Promise<Product> {
-  return invoke<Product>("get_product", { id });
+  return authedInvoke<Product>("get_product", { id });
 }
 
 export async function loadCachedProducts(): Promise<Product[]> {
-  return invoke<Product[]>("load_cached_products");
+  return authedInvoke<Product[]>("load_cached_products");
 }
 
 export async function toggleFavorite(productId: number): Promise<boolean> {
-  return invoke<boolean>("toggle_favorite", { productId });
+  return authedInvoke<boolean>("toggle_favorite", { productId });
 }
 
 export async function getFavoriteIds(): Promise<number[]> {
-  return invoke<number[]>("get_favorite_ids");
+  return authedInvoke<number[]>("get_favorite_ids");
 }
 
 export async function getDownloadedProductIds(): Promise<number[]> {
-  return invoke<number[]>("get_downloaded_product_ids");
+  return authedInvoke<number[]>("get_downloaded_product_ids");
 }
 
 // --- Downloads ---
@@ -99,7 +124,7 @@ export async function startDownload(
   productId: number,
   linkHash: string
 ): Promise<DownloadItem> {
-  return invoke<DownloadItem>("start_download", { productId, linkHash });
+  return authedInvoke<DownloadItem>("start_download", { productId, linkHash });
 }
 
 export async function pauseDownload(id: string): Promise<void> {
@@ -116,6 +141,10 @@ export async function cancelDownload(id: string): Promise<void> {
 
 export async function getDownloadQueue(): Promise<DownloadItem[]> {
   return invoke<DownloadItem[]>("get_download_queue");
+}
+
+export async function clearDownloadHistory(): Promise<void> {
+  return invoke<void>("clear_download_history");
 }
 
 // --- DAW ---
@@ -212,15 +241,15 @@ export interface CartResult {
 }
 
 export async function createCart(productId: number): Promise<CartResult> {
-  return invoke<CartResult>("create_cart", { productId });
+  return authedInvoke<CartResult>("create_cart", { productId });
 }
 
 export async function placeOrder(email: string, paymentMethodId: string, quoteId: number): Promise<Record<string, unknown>> {
-  return invoke<Record<string, unknown>>("place_order", { email, paymentMethodId, quoteId });
+  return authedInvoke<Record<string, unknown>>("place_order", { email, paymentMethodId, quoteId });
 }
 
 export async function confirm3ds(paymentIntentId: string, quoteId: number): Promise<Record<string, unknown>> {
-  return invoke<Record<string, unknown>>("confirm_3ds", { paymentIntentId, quoteId });
+  return authedInvoke<Record<string, unknown>>("confirm_3ds", { paymentIntentId, quoteId });
 }
 
 // --- Filesystem ---

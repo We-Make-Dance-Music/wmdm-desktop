@@ -5,6 +5,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 import { useAuthStore } from "./stores/authStore";
 import { useProductStore } from "./stores/productStore";
 import { useEventListener } from "./hooks/useEventListener";
@@ -117,6 +119,8 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [syncNotification, setSyncNotification] = useState<number | null>(null);
+  const [updateAvailable, setUpdateAvailable] = useState<{ version: string; install: () => Promise<void> } | null>(null);
+  const [updateInstalling, setUpdateInstalling] = useState(false);
   const autoSyncRan = useRef(false);
 
   // Listen for Tauri download events
@@ -129,6 +133,35 @@ export default function App() {
   useEffect(() => {
     checkSession();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check for app updates (10s after launch, then every 6h)
+  useEffect(() => {
+    const checkForUpdate = async () => {
+      try {
+        const update = await check();
+        if (update) {
+          setUpdateAvailable({
+            version: update.version,
+            install: async () => {
+              setUpdateInstalling(true);
+              await update.downloadAndInstall();
+              await relaunch();
+            },
+          });
+        }
+      } catch {
+        // Silent — update check is best effort
+      }
+    };
+
+    const initialTimer = setTimeout(checkForUpdate, 10_000);
+    const intervalTimer = setInterval(checkForUpdate, 6 * 60 * 60 * 1000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
+  }, []);
 
   // Auto-sync on launch when authenticated
   const dismissNotification = useCallback(() => setSyncNotification(null), []);
@@ -206,6 +239,28 @@ export default function App() {
           count={syncNotification}
           onDismiss={dismissNotification}
         />
+      )}
+
+      {/* Update available banner */}
+      {updateAvailable && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-wmdm-accent text-white text-center py-2 px-4 text-sm flex items-center justify-center gap-3">
+          <span>WMDM v{updateAvailable.version} is available</span>
+          <button
+            onClick={updateAvailable.install}
+            disabled={updateInstalling}
+            className="bg-white/20 hover:bg-white/30 px-3 py-0.5 rounded text-xs font-medium transition-colors"
+          >
+            {updateInstalling ? "Installing..." : "Update now"}
+          </button>
+          <button
+            onClick={() => setUpdateAvailable(null)}
+            className="text-white/60 hover:text-white transition-colors ml-2"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 2l8 8M10 2l-8 8" />
+            </svg>
+          </button>
+        </div>
       )}
     </>
   );

@@ -4,9 +4,10 @@
 // ============================================================
 
 import { useMemo } from "react";
-import { open } from "@tauri-apps/plugin-shell";
+import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../../stores/playerStore";
 import { useProductStore } from "../../stores/productStore";
+import { useStoreNavStore } from "../../stores/storeNavStore";
 import { FormatBadge } from "../common/Badge";
 import Waveform from "./Waveform";
 
@@ -46,8 +47,16 @@ export default function MiniPlayer() {
 
   if (!currentTrack) return null;
 
+  const nav = useNavigate();
+  const setPendingUrl = useStoreNavStore((s) => s.setPendingUrl);
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const buyUrl = `https://www.wmdm.io/catalog/product/view/id/${currentTrack.id}`;
+
+  const handleBuy = () => {
+    setPendingUrl(buyUrl);
+    nav("/store");
+  };
 
   const handleSeek = (percent: number) => {
     seek((percent / 100) * duration);
@@ -118,7 +127,7 @@ export default function MiniPlayer() {
           </span>
         ) : (
           <button
-            onClick={() => open(buyUrl)}
+            onClick={handleBuy}
             className="text-[10px] bg-wmdm-accent hover:bg-wmdm-accent-hover text-white px-3 py-1 rounded font-medium transition-colors shrink-0"
           >
             Buy Now

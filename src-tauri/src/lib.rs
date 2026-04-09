@@ -149,6 +149,7 @@ pub struct AppSettings {
     pub launch_at_startup: bool,
     pub notifications_enabled: bool,
     pub theme: String,
+    pub first_run_complete: bool,
 }
 
 impl Default for AppSettings {
@@ -160,6 +161,7 @@ impl Default for AppSettings {
             launch_at_startup: false,
             notifications_enabled: true,
             theme: "dark".into(),
+            first_run_complete: false,
         }
     }
 }
@@ -224,6 +226,8 @@ pub struct StoreProduct {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
 
@@ -316,6 +320,7 @@ pub fn run() {
             commands::downloads::resume_download,
             commands::downloads::cancel_download,
             commands::downloads::get_download_queue,
+            commands::downloads::clear_download_history,
             // DAW
             commands::daw::detect_daws,
             commands::daw::get_daw_config,

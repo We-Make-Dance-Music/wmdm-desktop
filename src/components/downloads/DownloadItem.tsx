@@ -227,9 +227,15 @@ export default function DownloadItem({ item }: DownloadItemProps) {
         {/* Size info */}
         <div className="shrink-0 text-right">
           <p className="text-xs text-wmdm-text-muted">
-            {formatBytes(item.bytesDownloaded)}
-            {item.totalBytes > 0 && (
-              <span> / {formatBytes(item.totalBytes)}</span>
+            {item.status === DownloadStatus.Complete ? (
+              item.totalBytes > 0 ? formatBytes(item.totalBytes) : formatBytes(item.bytesDownloaded)
+            ) : (
+              <>
+                {formatBytes(item.bytesDownloaded)}
+                {item.totalBytes > 0 && (
+                  <span> / {formatBytes(item.totalBytes)}</span>
+                )}
+              </>
             )}
           </p>
         </div>

@@ -91,18 +91,16 @@ export default function LoginPage() {
       await login(email.trim(), password);
       // Check if first run — show welcome wizard
       try {
-        const settings = await import("../api/tauri").then(m => m.getSettings());
-        // If download path is empty, it's a fresh install
-        if (!settings.downloadPath || settings.downloadPath.includes("WMDM")) {
+        const tauri = await import("../api/tauri");
+        const settings = await tauri.getSettings();
+        if (settings.firstRunComplete) {
+          navigate("/library");
+        } else {
           navigate("/welcome");
-          return;
         }
       } catch {
-        // Settings not loaded yet — show welcome
         navigate("/welcome");
-        return;
       }
-      navigate("/library");
     } catch {
       // Error is set in the store
     }

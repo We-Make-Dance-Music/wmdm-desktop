@@ -100,26 +100,25 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Play button overlay */}
+        {/* Play button overlay — always visible */}
         {hasPreview && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               toggle(product);
             }}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-wmdm-accent
-                       flex items-center justify-center transition-all opacity-0 group-hover:opacity-100
-                       backdrop-blur-sm"
-            style={isCurrentlyPlaying ? { opacity: 1 } : {}}
+            className="absolute bottom-3 right-3 w-14 h-14 rounded-full bg-black/50 hover:bg-wmdm-accent
+                       flex items-center justify-center transition-colors
+                       backdrop-blur-sm shadow-lg"
           >
             {isCurrentlyPlaying ? (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="white">
-                <rect x="2" y="1.5" width="2.5" height="9" rx="0.5" />
-                <rect x="7" y="1.5" width="2.5" height="9" rx="0.5" />
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                <rect x="4" y="3" width="4" height="14" rx="1" />
+                <rect x="12" y="3" width="4" height="14" rx="1" />
               </svg>
             ) : (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="white">
-                <path d="M3 1.5v9l7-4.5-7-4.5z" />
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
+                <path d="M5 2.5v15l12-7.5-12-7.5z" />
               </svg>
             )}
           </button>

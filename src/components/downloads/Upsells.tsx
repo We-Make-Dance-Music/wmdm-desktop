@@ -81,20 +81,20 @@ function UpsellCard({ product }: { product: StoreProduct }) {
             </svg>
           </div>
         )}
-        {/* Play button */}
+        {/* Play button — always visible */}
         {product.streamUrl && (
           <button
             onClick={handlePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
           >
             {isCurrentlyPlaying ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
-                <rect x="4" y="3" width="3" height="10" rx="0.5" />
-                <rect x="9" y="3" width="3" height="10" rx="0.5" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
             ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
-                <path d="M5 3v10l8-5-8-5z" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M7 4v16l12-8-12-8z" />
               </svg>
             )}
           </button>

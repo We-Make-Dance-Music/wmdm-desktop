@@ -25,7 +25,7 @@ interface DownloadState {
   resumeDownload: (id: string) => Promise<void>;
   cancelDownload: (id: string) => Promise<void>;
   refreshQueue: () => Promise<void>;
-  clearHistory: () => void;
+  clearHistory: () => Promise<void>;
 
   // Event handlers (called from useEventListener hook)
   handleProgress: (event: DownloadProgressEvent) => void;
@@ -118,8 +118,13 @@ export const useDownloadStore = create<DownloadState>((set) => ({
     }
   },
 
-  clearHistory: () => {
+  clearHistory: async () => {
     set({ history: [] });
+    try {
+      await api.clearDownloadHistory();
+    } catch {
+      // Best effort
+    }
   },
 
   handleProgress: (event: DownloadProgressEvent) => {

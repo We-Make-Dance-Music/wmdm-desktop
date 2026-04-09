@@ -22,6 +22,7 @@ pub async fn get_settings(db: State<'_, SqlitePool>) -> Result<AppSettings, Stri
             "launch_at_startup" => settings.launch_at_startup = value == "true",
             "notifications_enabled" => settings.notifications_enabled = value == "true",
             "theme" => settings.theme = value,
+            "first_run_complete" => settings.first_run_complete = value == "true",
             _ => {}
         }
     }
