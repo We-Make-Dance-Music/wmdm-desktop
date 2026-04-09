@@ -137,5 +137,19 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), String> {
     .await
     .map_err(|e| format!("Migration failed (daw_config): {e}"))?;
 
+    // Schema upgrades — add columns that may be missing from older installs.
+    // ALTER TABLE ADD COLUMN is safe to call even if the column exists (SQLite ignores duplicates in some versions),
+    // but we wrap in a helper that silently ignores "duplicate column" errors.
+    add_column_if_missing(pool, "products", "waveform", "TEXT").await;
+    add_column_if_missing(pool, "products", "file_size", "INTEGER").await;
+    add_column_if_missing(pool, "products", "raw_json", "TEXT NOT NULL DEFAULT '{}'").await;
+    add_column_if_missing(pool, "download_queue", "download_url", "TEXT").await;
+
     Ok(())
+}
+
+async fn add_column_if_missing(pool: &SqlitePool, table: &str, column: &str, col_type: &str) {
+    let sql = format!("ALTER TABLE {table} ADD COLUMN {column} {col_type}");
+    // Ignore error — it means the column already exists
+    let _ = sqlx::query(&sql).execute(pool).await;
 }

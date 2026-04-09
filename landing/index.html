@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WMDM Desktop — Your Templates. Your DAW. Instantly.</title>
-    <meta name="description" content="Download the WMDM Desktop App. Templates land directly in your DAW. Preview tracks, manage downloads, scan plugins. 7.3MB. Free.">
+    <meta name="description" content="Download the WMDM Desktop App. Templates land directly in your DAW. Preview tracks, manage downloads, scan plugins. Free for Mac and Windows.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ═══ Grain overlay ═══ */
+        /* Grain overlay */
         body::after {
             content: '';
             position: fixed;
@@ -190,6 +190,18 @@
             gap: 0.4rem;
         }
 
+        .hero-existing {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            animation: fadeUp 0.6s ease-out 0.5s both;
+        }
+
+        .hero-existing strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
         /* ═══ App Preview ═══ */
         .preview {
             max-width: 1000px;
@@ -233,6 +245,72 @@
         .preview-dot.red { background: #ff5f57; }
         .preview-dot.yellow { background: #febc2e; }
         .preview-dot.green { background: #28c840; }
+
+        /* ═══ How It Works ═══ */
+        .how-it-works {
+            max-width: 900px;
+            margin: 8rem auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .how-it-works h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .how-it-works > p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .step {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .step h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .step-arrow {
+            display: none;
+        }
 
         /* ═══ Features Grid ═══ */
         .features {
@@ -312,6 +390,60 @@
             font-size: 0.9rem;
             line-height: 1.6;
         }
+
+        /* ═══ Splice Comparison ═══ */
+        .comparison {
+            max-width: 800px;
+            margin: 8rem auto;
+            padding: 0 2rem;
+        }
+
+        .comparison h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th:first-child {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .comparison-table td:first-child {
+            color: var(--text-muted);
+        }
+
+        .comparison-table .wmdm-col {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .comparison-table .other-col {
+            color: var(--text-muted);
+        }
+
+        .check { color: var(--success); }
+        .cross { color: #ef4444; }
 
         /* ═══ DAW Support ═══ */
         .daws {
@@ -433,6 +565,62 @@
             margin-bottom: 2.5rem;
         }
 
+        .download-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: var(--font-display);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .download-btn.mac {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        .download-btn.mac:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .download-btn.windows {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .download-btn.windows:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .download-btn .os-icon {
+            display: flex;
+            align-items: center;
+        }
+
+        .download-sub {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            font-weight: 400;
+        }
+
         /* ═══ Footer ═══ */
         footer {
             border-top: 1px solid var(--border);
@@ -479,6 +667,8 @@
             .stats { grid-template-columns: repeat(2, 1fr); }
             .hero-meta { flex-wrap: wrap; justify-content: center; }
             .daw-grid { gap: 0.75rem; }
+            .steps { grid-template-columns: 1fr; }
+            .comparison-table th, .comparison-table td { padding: 0.75rem; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -494,14 +684,14 @@
     <h1>Your templates.<br><span class="accent">Your DAW. Instantly.</span></h1>
 
     <p class="hero-sub">
-        Download the WMDM Desktop App. Templates land directly in Logic, Ableton, Cubase, and FL Studio.
+        Download the WMDM app. Templates land directly in Logic, Ableton, Cubase, FL Studio, Bitwig, and Studio One.
         Preview tracks, manage presets, scan your plugins.
     </p>
 
     <div class="hero-actions">
         <a href="#download" class="btn-primary">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v9m0 0l-3.5-3.5M9 12l3.5-3.5"/><path d="M3 13.5v1.5a1 1 0 001 1h10a1 1 0 001-1v-1.5"/></svg>
-            Download for Mac
+            Download Free
         </a>
         <a href="#features" class="btn-secondary">See Features</a>
     </div>
@@ -509,11 +699,11 @@
     <div class="hero-meta">
         <span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
-            7.3 MB
+            Mac + Windows
         </span>
         <span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
-            macOS 12+
+            ~10 MB
         </span>
         <span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
@@ -521,9 +711,13 @@
         </span>
         <span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7l2 2 3-3"/></svg>
-            Windows coming soon
+            Free forever
         </span>
     </div>
+
+    <p class="hero-existing">
+        <strong>Already have WMDM purchases?</strong> Sign in and your entire library is waiting.
+    </p>
 </section>
 
 <!-- ═══ App Preview ═══ -->
@@ -534,88 +728,133 @@
             <span class="preview-dot yellow"></span>
             <span class="preview-dot green"></span>
         </div>
-        <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, #0c0c14 0%, #1a1a2e 50%, #0c0c14 100%); display: flex; align-items: center; justify-content: center; padding: 3rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🎹</div>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">App screenshot will go here</p>
-                <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem; font-family: var(--font-mono);">1200 × 800 recommended</p>
+        <!-- Replace this with an actual app screenshot -->
+        <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, #0c0c14 0%, #1a1a2e 50%, #0c0c14 100%); display: flex; align-items: center; justify-content: center; padding: 3rem; position: relative; overflow: hidden;">
+            <!-- Simulated app UI -->
+            <div style="width: 100%; max-width: 800px; display: flex; gap: 1rem; height: 100%;">
+                <!-- Sidebar -->
+                <div style="width: 180px; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1.5rem 1rem; flex-shrink: 0;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--accent); margin-bottom: 2rem;"></div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="height: 28px; border-radius: 6px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.2);"></div>
+                        <div style="height: 28px; border-radius: 6px; background: rgba(255,255,255,0.03);"></div>
+                        <div style="height: 28px; border-radius: 6px; background: rgba(255,255,255,0.03);"></div>
+                        <div style="height: 28px; border-radius: 6px; background: rgba(255,255,255,0.03);"></div>
+                    </div>
+                </div>
+                <!-- Content grid -->
+                <div style="flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; align-content: start; padding: 0.5rem 0;">
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #2d1b69, #1a1a2e); border: 1px solid var(--border);"></div>
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #1b3a69, #1a1a2e); border: 1px solid var(--border);"></div>
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #691b3a, #1a1a2e); border: 1px solid var(--border);"></div>
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #1b6950, #1a1a2e); border: 1px solid var(--border);"></div>
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #69541b, #1a1a2e); border: 1px solid var(--border);"></div>
+                    <div style="aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #3a1b69, #1a1a2e); border: 1px solid var(--border);"></div>
+                </div>
+            </div>
+            <!-- Mini player bar -->
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: rgba(12,12,20,0.95); border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.5rem; gap: 1rem;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); flex-shrink: 0;"></div>
+                <div style="flex-shrink: 0;">
+                    <div style="width: 120px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-bottom: 4px;"></div>
+                    <div style="width: 70px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.05);"></div>
+                </div>
+                <div style="flex: 1; height: 20px; border-radius: 4px; background: rgba(255,255,255,0.03); position: relative; overflow: hidden;">
+                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 35%; background: linear-gradient(90deg, var(--accent), rgba(99,102,241,0.3)); border-radius: 4px;"></div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- ═══ How It Works ═══ -->
+<section class="how-it-works">
+    <h2>Three steps. That's it.</h2>
+    <p>No manual file management. No finding the right folder. Just music.</p>
+
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3>Buy on any WMDM store</h3>
+            <p>Purchase templates, presets, or samples from any of our 7 stores. Or use your existing purchases.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>Hit download in the app</h3>
+            <p>One click. The app downloads, extracts, and places every file exactly where it needs to go.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>Open your DAW</h3>
+            <p>Templates appear in your template chooser. Presets show up in your synth browser. Done.</p>
+        </div>
+    </div>
+</section>
+
 <!-- ═══ Hero Feature: Smart Placement ═══ -->
-<section class="features" id="features" style="margin-top: 10rem;">
+<section class="features" id="features" style="margin-top: 4rem;">
     <div style="background: linear-gradient(135deg, var(--surface) 0%, rgba(99, 102, 241, 0.08) 50%, var(--surface) 100%); border: 1px solid var(--border); border-radius: 24px; padding: 4rem; position: relative; overflow: hidden;">
         <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%); pointer-events: none;"></div>
 
         <div style="display: flex; flex-direction: column; gap: 3rem;">
             <div>
                 <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(99,102,241,0.15); border-radius: 100px; font-size: 0.7rem; font-family: var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">
-                    ✦ Core Feature
+                    The feature no one else has
                 </div>
                 <h2 style="font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1.5rem;">
                     No more dragging files.<br>
                     <span style="background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Everything goes where it belongs.</span>
                 </h2>
-                <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 2rem;">
-                    Download a template — it appears in your DAW's template chooser. Buy Serum presets — they show up in Serum's browser. Get a sample pack — organized in your samples folder. The app knows your DAWs, your plugins, your folder structure.
-                </p>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; font-style: italic;">
-                    "I downloaded 3 Logic templates. Opened Logic, went to File → New from Template — all three were right there. No Finder, no dragging, no thinking."
+                <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">
+                    Download a template — it appears in your DAW's template chooser. Buy Serum presets — they show up in Serum's browser. Get a sample pack — organized in your samples folder. The app detects your DAWs, your plugins, your folder structure. No other platform does this.
                 </p>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <!-- Placement paths -->
                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(128,128,128,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">📁</div>
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(128,128,128,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#888" stroke-width="1.5"><path d="M2 6h16M2 6v10a1 1 0 001 1h14a1 1 0 001-1V6M2 6l2-3h4l2 3"/></svg>
+                    </div>
                     <div>
                         <div style="font-size: 0.85rem; font-weight: 600;">Logic Pro Templates</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">~/Music/Audio Music Apps/Project Templates/</div>
                     </div>
-                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO ✓</div>
+                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO</div>
                 </div>
 
                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(13,148,136,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">📁</div>
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(13,148,136,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#0d9488" stroke-width="1.5"><path d="M2 6h16M2 6v10a1 1 0 001 1h14a1 1 0 001-1V6M2 6l2-3h4l2 3"/></svg>
+                    </div>
                     <div>
                         <div style="font-size: 0.85rem; font-weight: 600;">Ableton Live Sets</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">~/Music/Ableton/User Library/Templates/</div>
                     </div>
-                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO ✓</div>
+                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO</div>
                 </div>
 
                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">🎛️</div>
-                    <div>
-                        <div style="font-size: 0.85rem; font-weight: 600;">Serum Presets</div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">~/Documents/Xfer/Serum Presets/Presets/</div>
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M7 10h6M10 7v6"/></svg>
                     </div>
-                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO ✓</div>
-                </div>
-
-                <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245,158,11,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">🎛️</div>
                     <div>
-                        <div style="font-size: 0.85rem; font-weight: 600;">Massive / Vital / Sylenth1</div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">Plugin-specific preset folders</div>
+                        <div style="font-size: 0.85rem; font-weight: 600;">Serum / Massive / Vital / Sylenth1</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">Plugin-specific preset folders (12 synths)</div>
                     </div>
-                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO ✓</div>
+                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO</div>
                 </div>
 
                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">🎵</div>
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#22c55e" stroke-width="1.5"><path d="M3 14l4-4 3 2 4-5 3 3"/><rect x="2" y="4" width="16" height="12" rx="1"/></svg>
+                    </div>
                     <div>
                         <div style="font-size: 0.85rem; font-weight: 600;">Samples, Stems & MIDI</div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">~/Music/WMDM/Samples/ • Stems/ • MIDI/</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">Organized by product in ~/Music/WMDM/</div>
                     </div>
-                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO ✓</div>
+                    <div style="margin-left: auto; color: var(--success); font-size: 0.7rem; font-weight: 600; white-space: nowrap;">AUTO</div>
                 </div>
-
-                <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-family: var(--font-mono);">
-                    12 synths supported · 6 DAWs · Stems · MIDI · Samples
-                </p>
             </div>
         </div>
     </div>
@@ -625,35 +864,105 @@
 <section class="features" style="margin-top: 4rem;">
     <div class="features-grid">
         <div class="feature-card">
-            <div class="feature-icon green">▶️</div>
+            <div class="feature-icon green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
             <h3>Audio Preview</h3>
-            <p>Stream demo tracks with real waveform visualization. Preview before you download. Spacebar to play/pause.</p>
+            <p>Stream demo tracks with waveform visualization before you download. Spacebar to play/pause, arrow keys to skip.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon amber">🔍</div>
+            <div class="feature-icon amber">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
             <h3>Plugin Scanner</h3>
-            <p>Scans your installed AU/VST3/VST/CLAP plugins. Shows compatibility with templates before you buy. "You have 14/16 plugins."</p>
+            <p>Scans your AU, VST3, VST, and CLAP plugins. Shows which WMDM products are compatible with what you already have installed.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon cyan">🛒</div>
+            <div class="feature-icon cyan">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+            </div>
             <h3>Built-in Store</h3>
-            <p>Browse the full WMDM catalog inside the app. Preview, buy, and download without leaving. Your advanced player included.</p>
+            <p>Browse the full WMDM catalog, preview, and buy without leaving the app. Your purchases appear in the library instantly.</p>
         </div>
 
         <div class="feature-card featured">
-            <div class="feature-icon pink">⚡</div>
+            <div class="feature-icon pink">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
             <h3>All 7 Stores. One Library.</h3>
-            <p>Purchases from wemakedancemusic.com, logictemplates.com, abletontemplates.net, cubasetemplates.com, flstudiotemplates.com, wmdm.io, and progressivegrooves.com — all unified in one library. Sign in once, see everything.</p>
+            <p>Purchases from wemakedancemusic.com, logictemplates.com, abletontemplates.net, cubasetemplates.com, flstudiotemplates.com, wmdm.io, and progressivegrooves.com — all unified in one library. Sign in once, see everything you own.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon blue">⬇️</div>
+            <div class="feature-icon blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
             <h3>Download Manager</h3>
-            <p>Queue multiple downloads. Pause, resume, retry. 3 concurrent downloads. Progress tracking with speed and ETA.</p>
+            <p>Queue multiple downloads. Pause, resume, retry. 3 concurrent downloads with progress tracking, speed, and ETA.</p>
         </div>
     </div>
+</section>
+
+<!-- ═══ Comparison ═══ -->
+<section class="comparison">
+    <h2>How WMDM stacks up</h2>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="wmdm-col">WMDM</th>
+                <th class="other-col">Splice</th>
+                <th class="other-col">Loopcloud</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>DAW template placement</td>
+                <td class="check">Yes</td>
+                <td class="cross">No</td>
+                <td class="cross">No</td>
+            </tr>
+            <tr>
+                <td>Synth preset placement</td>
+                <td class="check">12 synths</td>
+                <td class="other-col">3 synths</td>
+                <td class="cross">No</td>
+            </tr>
+            <tr>
+                <td>Full production templates</td>
+                <td class="check">Yes</td>
+                <td class="cross">No</td>
+                <td class="cross">No</td>
+            </tr>
+            <tr>
+                <td>App size</td>
+                <td class="wmdm-col">~10 MB</td>
+                <td class="other-col">~150 MB</td>
+                <td class="other-col">~120 MB</td>
+            </tr>
+            <tr>
+                <td>Requires subscription</td>
+                <td class="check">No</td>
+                <td class="cross">Yes</td>
+                <td class="cross">Yes</td>
+            </tr>
+            <tr>
+                <td>One-time purchases</td>
+                <td class="check">Yes</td>
+                <td class="other-col">Limited</td>
+                <td class="other-col">Limited</td>
+            </tr>
+            <tr>
+                <td>Offline library access</td>
+                <td class="check">Yes</td>
+                <td class="check">Yes</td>
+                <td class="cross">No</td>
+            </tr>
+        </tbody>
+    </table>
 </section>
 
 <!-- ═══ DAW Support ═══ -->
@@ -692,7 +1001,7 @@
 <!-- ═══ Stats ═══ -->
 <section class="stats">
     <div class="stat">
-        <div class="stat-number">7.3<span class="accent">MB</span></div>
+        <div class="stat-number">~10<span class="accent">MB</span></div>
         <div class="stat-label">App Size</div>
     </div>
     <div class="stat">
@@ -701,7 +1010,7 @@
     </div>
     <div class="stat">
         <div class="stat-number">12</div>
-        <div class="stat-label">Synth Presets</div>
+        <div class="stat-label">Synths Supported</div>
     </div>
     <div class="stat">
         <div class="stat-number">6</div>
@@ -712,24 +1021,27 @@
 <!-- ═══ CTA ═══ -->
 <section class="cta" id="download">
     <h2>Stop managing files.<br>Start making music.</h2>
-    <p>Download free. Works with all your WMDM purchases.</p>
+    <p>Free download. Works with all your WMDM purchases across every store.</p>
 
-    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="/downloads/WMDM_v1.0_aarch64.dmg" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.05rem;">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M15.6 8.2c-.1-2.1-1.7-3-1.8-3.1-.9-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7C3.9 3.6 2.5 4.5 1.7 6 0 9.1.8 13.7 2.4 16.2c.8 1.2 1.8 2.6 3 2.5 1.2 0 1.7-.8 3.1-.8s1.9.8 3.1.8 2.1-1.2 2.9-2.5c.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.8 0-2.3 1.9-3.4 2-3.5z"/><path d="M12.7 2.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.5-.6.7-1.1 1.9-1 3 1.1.1 2.1-.6 2.8-1.5z"/></svg>
-            Download for Mac
+    <div class="download-buttons">
+        <a href="/downloads/WMDM_1.0.0_aarch64.dmg" class="download-btn mac">
+            <span class="os-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M15.6 8.2c-.1-2.1-1.7-3-1.8-3.1-.9-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7C3.9 3.6 2.5 4.5 1.7 6 0 9.1.8 13.7 2.4 16.2c.8 1.2 1.8 2.6 3 2.5 1.2 0 1.7-.8 3.1-.8s1.9.8 3.1.8 2.1-1.2 2.9-2.5c.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.8 0-2.3 1.9-3.4 2-3.5z"/><path d="M12.7 2.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.5-.6.7-1.1 1.9-1 3 1.1.1 2.1-.6 2.8-1.5z"/></svg>
+            </span>
+            <div>
+                Download for Mac
+                <div class="download-sub">Apple Silicon & Intel · macOS 12+</div>
+            </div>
         </a>
-        <a href="#" class="btn-secondary" style="padding: 1rem 2.5rem; font-size: 1.05rem; opacity: 0.5; pointer-events: none;">
-            Windows — Coming Soon
+        <a href="/downloads/WMDM_1.0.0_x64-setup.exe" class="download-btn windows">
+            <span class="os-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M0 2.9l8.1-1.1v7.8H0V2.9zm9 -1.2L20 0v9.6H9V1.7zM20 10.4v9.6l-11-1.5V10.4h11zM8.1 18.2L0 17.1V10.4h8.1v7.8z"/></svg>
+            </span>
+            <div>
+                Download for Windows
+                <div class="download-sub">Windows 10+ · 64-bit</div>
+            </div>
         </a>
-    </div>
-
-    <div style="display: flex; gap: 2rem; justify-content: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
-        <span>Apple Silicon</span>
-        <span>•</span>
-        <span>Intel</span>
-        <span>•</span>
-        <span>macOS 12+</span>
     </div>
 </section>
 
