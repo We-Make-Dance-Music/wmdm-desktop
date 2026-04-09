@@ -7,7 +7,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TitleBar from "./TitleBar";
 import MiniPlayer from "../audio/MiniPlayer";
-import { usePlayerStore } from "../../stores/playerStore";
 
 export default function AppLayout() {
   const location = useLocation();
