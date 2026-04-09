@@ -3,7 +3,7 @@
 // With waveform visualization
 // ============================================================
 
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "../../stores/playerStore";
 import { useProductStore } from "../../stores/productStore";
@@ -44,25 +44,12 @@ export default function MiniPlayer() {
 
   const products = useProductStore((s) => s.products);
   const isOwned = currentTrack ? products.some(p => p.id === currentTrack.id) : false;
-
-  // Force repaint when player first appears (fixes Intel Mac WebKit compositing bug)
-  const playerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (currentTrack && playerRef.current) {
-      // Trigger a reflow/repaint
-      requestAnimationFrame(() => {
-        document.body.style.transform = 'translateZ(0)';
-        requestAnimationFrame(() => {
-          document.body.style.transform = '';
-        });
-      });
-    }
-  }, [currentTrack?.id]);
-
-  if (!currentTrack) return null;
-
   const nav = useNavigate();
   const setPendingUrl = useStoreNavStore((s) => s.setPendingUrl);
+
+  if (!currentTrack) {
+    return <div className="fixed bottom-0 left-0 right-0 z-50 h-0 overflow-hidden" />;
+  }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const buyUrl = `https://www.wmdm.io/catalog/product/view/id/${currentTrack.id}`;
@@ -77,7 +64,7 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div ref={playerRef} className="fixed bottom-0 left-0 right-0 z-50 bg-wmdm-surface border-t border-wmdm-border">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-wmdm-surface border-t border-wmdm-border">
       <div className="flex items-center gap-3 px-4 py-2">
         {/* Play/Pause */}
         <button
