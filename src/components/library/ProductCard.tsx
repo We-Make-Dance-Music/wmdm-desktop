@@ -73,11 +73,6 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </div>
         )}
 
-        {/* Format badge overlay */}
-        <div className="absolute top-2 left-2">
-          <FormatBadge formatType={product.formatType} />
-        </div>
-
         {/* Status indicators */}
         <div className="absolute top-2 right-2 flex items-center gap-1">
           {isDownloaded && (

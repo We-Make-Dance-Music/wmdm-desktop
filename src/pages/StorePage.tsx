@@ -7,20 +7,25 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { usePlayerStore } from "../stores/playerStore";
+import { useStoreNavStore } from "../stores/storeNavStore";
 
-// TODO: Switch to https://www.wmdm.io for production
 const STORE_URL = "https://www.wmdm.io";
 
 export default function StorePage() {
   const stop = usePlayerStore((s) => s.stop);
   const [error, setError] = useState<string | null>(null);
 
+  const pendingUrl = useStoreNavStore((s) => s.pendingUrl);
+
   useEffect(() => {
     // Stop the app player (website has its own)
     stop();
 
+    // Check if there's a specific product URL to open
+    const targetUrl = useStoreNavStore.getState().consumeUrl() || STORE_URL;
+
     // Open the embedded store webview
-    invoke("open_store_window", { url: STORE_URL })
+    invoke("open_store_window", { url: targetUrl })
       .catch((err) => {
         console.error("[WMDM] Store webview error:", err);
         setError(String(err));
@@ -47,6 +52,18 @@ export default function StorePage() {
       unlistenMove.then((fn) => fn());
     };
   }, [stop]);
+
+  // Watch for new product URLs while already on the store page
+  useEffect(() => {
+    if (pendingUrl) {
+      const url = useStoreNavStore.getState().consumeUrl();
+      if (url) {
+        invoke("close_store_window").then(() => {
+          invoke("open_store_window", { url }).catch(() => {});
+        });
+      }
+    }
+  }, [pendingUrl]);
 
   if (error) {
     return (

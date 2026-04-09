@@ -4,13 +4,19 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import { open } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
 import type { StoreProduct } from "../../types";
 import { FormatBadge, DawBadge } from "../common/Badge";
 import { usePlayerStore } from "../../stores/playerStore";
 import { useProductStore } from "../../stores/productStore";
 import { getStoreProducts } from "../../api/tauri";
 import CheckoutModal from "./CheckoutModal";
+
+/** Navigate the embedded store webview to a product URL */
+async function navigateStore(url: string) {
+  await invoke("close_store_window");
+  await invoke("open_store_window", { url });
+}
 
 function RelatedProductRow({ product, isOwned }: { product: StoreProduct; isOwned: boolean }) {
   const playerToggle = usePlayerStore((s) => s.toggle);
@@ -78,7 +84,7 @@ function RelatedProductRow({ product, isOwned }: { product: StoreProduct; isOwne
         <span className="text-[9px] text-wmdm-success font-medium shrink-0">Owned</span>
       ) : (
         <button
-          onClick={() => product.productUrl && open(product.productUrl)}
+          onClick={() => product.productUrl && navigateStore(product.productUrl)}
           className="text-[9px] bg-wmdm-accent/80 hover:bg-wmdm-accent text-white px-2.5 py-1 rounded font-medium shrink-0 transition-colors"
         >
           {product.price === 0 ? "Free" : `$${product.price.toFixed(2)}`}
@@ -189,7 +195,7 @@ export default function StoreProductDetail({ product, onClose }: StoreProductDet
     if (product.price === 0) {
       // Free products: open in browser
       if (product.productUrl) {
-        open(product.productUrl);
+        if (product.productUrl) navigateStore(product.productUrl);
       }
     } else {
       // Paid products: open in-app checkout

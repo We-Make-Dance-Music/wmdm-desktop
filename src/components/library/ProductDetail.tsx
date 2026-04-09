@@ -3,8 +3,9 @@
 // ============================================================
 
 import { useState, useMemo, useEffect } from "react";
-import { open } from "@tauri-apps/plugin-shell";
+import { useNavigate } from "react-router-dom";
 import type { Product, DownloadLink, StoreProduct } from "../../types";
+import { useStoreNavStore } from "../../stores/storeNavStore";
 import { FormatBadge, DawBadge } from "../common/Badge";
 import { useDownloadStore } from "../../stores/downloadStore";
 import { useProductStore } from "../../stores/productStore";
@@ -188,6 +189,8 @@ function UpsellCard({ item, isOwned }: { item: StoreProduct; isOwned: boolean })
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const isCurrentlyPlaying = currentTrack?.id === item.id && isPlaying;
+  const nav = useNavigate();
+  const setPendingUrl = useStoreNavStore((s) => s.setPendingUrl);
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -195,7 +198,7 @@ function UpsellCard({ item, isOwned }: { item: StoreProduct; isOwned: boolean })
       toggle({
         id: item.id, name: item.name, sku: item.sku,
         thumbnailUrl: item.thumbnailUrl, streamUrl: item.streamUrl,
-        waveform: null, formatType: item.formatType,
+        waveform: item.waveform ?? null, formatType: item.formatType,
         daws: item.daws, genres: item.genres, bpm: item.bpm,
         key: item.key, creator: item.creator,
         downloadLinks: [], purchasedAt: "", fileSize: null,
@@ -216,9 +219,6 @@ function UpsellCard({ item, isOwned }: { item: StoreProduct; isOwned: boolean })
             </svg>
           </div>
         )}
-        <div className="absolute top-1 left-1">
-          <FormatBadge formatType={item.formatType} />
-        </div>
         {item.streamUrl && (
           <button onClick={handlePlay}
             className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/50 hover:bg-wmdm-accent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
@@ -236,7 +236,7 @@ function UpsellCard({ item, isOwned }: { item: StoreProduct; isOwned: boolean })
         {isOwned ? (
           <span className="text-[9px] text-wmdm-success font-medium">Purchased</span>
         ) : (
-          <button onClick={() => item.productUrl && open(item.productUrl)}
+          <button onClick={() => { if (item.productUrl) { setPendingUrl(item.productUrl); nav("/store"); } }}
             className="text-[9px] bg-wmdm-accent hover:bg-wmdm-accent-hover text-white px-2 py-0.5 rounded font-medium transition-colors">
             {item.price === 0 ? "Free" : `Buy $${item.price.toFixed(2)}`}
           </button>

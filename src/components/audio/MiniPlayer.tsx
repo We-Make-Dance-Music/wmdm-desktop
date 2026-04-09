@@ -47,7 +47,7 @@ export default function MiniPlayer() {
   if (!currentTrack) return null;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const buyUrl = `https://www.wemakedancemusic.com/catalog/product/view/id/${currentTrack.id}`;
+  const buyUrl = `https://www.wmdm.io/catalog/product/view/id/${currentTrack.id}`;
 
   const handleSeek = (percent: number) => {
     seek((percent / 100) * duration);

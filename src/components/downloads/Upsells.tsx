@@ -4,9 +4,10 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import { open } from "@tauri-apps/plugin-shell";
+import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../../stores/productStore";
 import { usePlayerStore } from "../../stores/playerStore";
+import { useStoreNavStore } from "../../stores/storeNavStore";
 import type { StoreProduct } from "../../types";
 import { FormatBadge, DawBadge } from "../common/Badge";
 import * as api from "../../api/tauri";
@@ -28,10 +29,13 @@ function UpsellCard({ product }: { product: StoreProduct }) {
   const isCurrentlyPlaying = currentTrack?.id === product.id && isPlaying;
   const ownedIds = useProductStore((s) => s.products).map((p) => p.id);
   const isOwned = ownedIds.includes(product.id);
+  const nav = useNavigate();
+  const setPendingUrl = useStoreNavStore((s) => s.setPendingUrl);
 
   const handleBuy = () => {
     if (product.productUrl) {
-      open(product.productUrl);
+      setPendingUrl(product.productUrl);
+      nav("/store");
     }
   };
 
@@ -50,7 +54,7 @@ function UpsellCard({ product }: { product: StoreProduct }) {
         bpm: product.bpm,
         key: product.key,
         creator: product.creator,
-        downloadLinks: [], waveform: null,
+        downloadLinks: [], waveform: product.waveform ?? null,
         purchasedAt: "",
         fileSize: null,
       });
