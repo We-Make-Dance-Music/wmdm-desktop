@@ -104,8 +104,6 @@ export default function SettingsPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
-  const [editingDaw, setEditingDaw] = useState<string | null>(null);
-  const [dawPathInput, setDawPathInput] = useState("");
 
   useEffect(() => {
     loadSettings();
@@ -116,13 +114,6 @@ export default function SettingsPage() {
     navigate("/login");
   };
 
-  const handleDawPathSave = async (slug: string) => {
-    if (dawPathInput.trim()) {
-      await setDawPath(slug, dawPathInput.trim());
-    }
-    setEditingDaw(null);
-    setDawPathInput("");
-  };
 
   if (isLoading) {
     return (

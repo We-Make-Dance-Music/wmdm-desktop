@@ -249,7 +249,6 @@ function UpsellCard({ item, isOwned }: { item: StoreProduct; isOwned: boolean })
 export default function ProductDetail({ product, onClose }: ProductDetailProps) {
   const [imgError, setImgError] = useState(false);
   const products = useProductStore((s) => s.products);
-  const setSelectedProduct = useProductStore((s) => s.setSelectedProduct);
 
   // More from this creator: fetch from store API (upsell — not just owned products)
   const [creatorUpsells, setCreatorUpsells] = useState<StoreProduct[]>([]);
