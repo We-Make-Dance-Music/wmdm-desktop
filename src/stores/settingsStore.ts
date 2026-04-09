@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   launchAtStartup: false,
   notificationsEnabled: true,
   theme: "dark",
+  firstRunComplete: false,
 };
 
 export const useSettingsStore = create<SettingsState>((set) => ({

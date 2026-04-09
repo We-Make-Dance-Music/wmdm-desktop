@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import type { Product } from "../../types";
-import { FormatBadge, DawBadge } from "../common/Badge";
+import { DawBadge } from "../common/Badge";
 import { useProductStore } from "../../stores/productStore";
 import { usePlayerStore } from "../../stores/playerStore";
 
