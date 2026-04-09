@@ -28,11 +28,11 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const hasPreview = !!product.streamUrl;
 
   return (
-    <button
+    <div
       onClick={() => onClick(product)}
       className="group w-full text-left bg-wmdm-surface rounded-xl border border-wmdm-border
                  hover:border-wmdm-accent/40 hover:bg-wmdm-surface/80
-                 transition-default overflow-hidden focus-ring"
+                 transition-default overflow-hidden focus-ring cursor-pointer"
     >
       {/* Thumbnail */}
       <div className="relative aspect-[4/3] bg-wmdm-bg overflow-hidden">
@@ -159,6 +159,6 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </div>
         )}
       </div>
-    </button>
+    </div>
   );
 }

@@ -161,10 +161,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
         }
       }
 
-      console.log(`[WMDM] Sync complete: ${allProducts.length} total products`);
+      // Deduplicate by product ID (same product can appear from multiple stores)
+      const seen = new Set<number>();
+      const unique = allProducts.filter((p) => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+
+      console.log(`[WMDM] Sync complete: ${unique.length} unique products (${allProducts.length} total)`);
       set({
-        products: allProducts,
-        totalCount: allProducts.length,
+        products: unique,
+        totalCount: unique.length,
         isSyncing: false,
         syncError: null,
         lastSync: new Date().toISOString(),
