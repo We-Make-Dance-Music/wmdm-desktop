@@ -303,10 +303,14 @@ pub async fn logout(
     api.set_token(None).await;
     api.set_store_code(None).await;
 
-    // Clear user-specific cached data
+    // Clear user-specific cached data (per-account — favorites, library, downloads)
     let _ = sqlx::query("DELETE FROM products").execute(db.inner()).await;
     let _ = sqlx::query("DELETE FROM download_queue").execute(db.inner()).await;
     let _ = sqlx::query("DELETE FROM placed_files").execute(db.inner()).await;
+    let _ = sqlx::query("DELETE FROM favorites").execute(db.inner()).await;
+
+    // Reset last_sync so the next login triggers a full fresh sync
+    let _ = sqlx::query("DELETE FROM settings WHERE key = 'last_sync'").execute(db.inner()).await;
 
     Ok(())
 }

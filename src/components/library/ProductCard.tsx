@@ -5,9 +5,12 @@
 
 import { useState } from "react";
 import type { Product } from "../../types";
+import { DownloadStatus } from "../../types";
 import { DawBadge } from "../common/Badge";
 import { useProductStore } from "../../stores/productStore";
 import { usePlayerStore } from "../../stores/playerStore";
+import { useDownloadStore } from "../../stores/downloadStore";
+import { revealInFinder } from "../../api/tauri";
 
 interface ProductCardProps {
   product: Product;
@@ -26,6 +29,47 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const isCurrentlyPlaying = currentTrack?.id === product.id && isPlaying;
   const hasPreview = !!product.streamUrl;
+
+  // Download state
+  const startDownload = useDownloadStore((s) => s.startDownload);
+  const queue = useDownloadStore((s) => s.queue);
+  const history = useDownloadStore((s) => s.history);
+  const firstLink = product.downloadLinks?.[0];
+  const activeDownload = firstLink
+    ? queue.find((i) => i.productId === product.id && i.linkHash === firstLink.hash)
+    : undefined;
+  const completedDownload = firstLink
+    ? history.find(
+        (i) =>
+          i.productId === product.id &&
+          i.linkHash === firstLink.hash &&
+          i.status === DownloadStatus.Complete
+      )
+    : undefined;
+  const isDownloading =
+    activeDownload &&
+    activeDownload.status !== DownloadStatus.Complete &&
+    activeDownload.status !== DownloadStatus.Error;
+  const [downloadStarting, setDownloadStarting] = useState(false);
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!firstLink || isDownloading || downloadStarting) return;
+    setDownloadStarting(true);
+    try {
+      await startDownload(product, firstLink.hash);
+    } catch {
+      // Error surfaces in download queue
+    }
+    setDownloadStarting(false);
+  };
+
+  const handleReveal = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (completedDownload?.outputPath) {
+      await revealInFinder(completedDownload.outputPath);
+    }
+  };
 
   return (
     <div
@@ -166,6 +210,43 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
               <span className="w-0.5 h-0.5 rounded-full bg-wmdm-text-muted" />
             )}
             {product.key && <span>{product.key}</span>}
+          </div>
+        )}
+
+        {/* Download button */}
+        {firstLink && (
+          <div className="pt-2">
+            {completedDownload ? (
+              <button
+                onClick={handleReveal}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-wmdm-success/10 text-wmdm-success hover:bg-wmdm-success/20 text-xs font-medium transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6.5l3 3 5-6" />
+                </svg>
+                Show in Finder
+              </button>
+            ) : isDownloading ? (
+              <div className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-wmdm-accent/10 text-wmdm-accent text-xs font-medium">
+                <svg className="animate-spin" width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
+                  <path d="M12 7a5 5 0 00-5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                {Math.round(activeDownload?.progress ?? 0)}%
+              </div>
+            ) : (
+              <button
+                onClick={handleDownload}
+                disabled={downloadStarting}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-wmdm-accent hover:bg-wmdm-accent-hover text-white text-xs font-semibold transition-colors shadow-sm disabled:opacity-50"
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 2v7m0 0l-3-3m3 3l3-3" />
+                  <path d="M2 11v1a1 1 0 001 1h8a1 1 0 001-1v-1" />
+                </svg>
+                Download
+              </button>
+            )}
           </div>
         )}
       </div>

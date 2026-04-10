@@ -79,6 +79,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Logout best-effort
     }
+    // Clear per-account in-memory state so the next login starts fresh
+    const { useProductStore } = await import("./productStore");
+    const { useDownloadStore } = await import("./downloadStore");
+    useProductStore.setState({
+      products: [],
+      filteredProducts: [],
+      downloadedIds: new Set<number>(),
+      favoriteIds: new Set<number>(),
+      lastSync: null,
+      totalCount: 0,
+      selectedProduct: null,
+    });
+    useDownloadStore.setState({
+      queue: [],
+      history: [],
+      activeCount: 0,
+    });
     set({
       user: null,
       isAuthenticated: false,

@@ -48,7 +48,7 @@ export default function MiniPlayer() {
   const setPendingUrl = useStoreNavStore((s) => s.setPendingUrl);
 
   if (!currentTrack) {
-    return <div className="fixed bottom-0 left-0 right-0 z-50 h-0 overflow-hidden" />;
+    return <div className="fixed bottom-0 left-[180px] right-0 z-50 h-0 overflow-hidden" />;
   }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -64,7 +64,7 @@ export default function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-wmdm-surface border-t border-wmdm-border">
+    <div className="fixed bottom-0 left-[180px] right-0 z-50 bg-wmdm-surface border-t border-wmdm-border">
       <div className="flex items-center gap-3 px-4 py-2">
         {/* Play/Pause */}
         <button

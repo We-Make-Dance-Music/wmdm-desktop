@@ -166,6 +166,13 @@ export default function App() {
   // Auto-sync on launch when authenticated
   const dismissNotification = useCallback(() => setSyncNotification(null), []);
 
+  // Reset auto-sync flag when user logs out, so the next login triggers sync again
+  useEffect(() => {
+    if (!isAuthenticated) {
+      autoSyncRan.current = false;
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (!sessionChecked || !isAuthenticated || autoSyncRan.current) return;
     autoSyncRan.current = true;
