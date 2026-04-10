@@ -38,6 +38,7 @@ export interface Product {
   downloadLinks: DownloadLink[];
   purchasedAt: string;
   fileSize: number | null;
+  isWelcomeGift?: boolean;
 }
 
 export type FormatType =

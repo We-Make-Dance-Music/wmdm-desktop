@@ -92,6 +92,8 @@ struct ApiProduct {
     store_id: Option<serde_json::Value>,
     #[serde(default)]
     order_increment_id: Option<String>,
+    #[serde(default)]
+    is_welcome_gift: bool,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -174,6 +176,7 @@ fn api_product_to_product(p: ApiProduct) -> Product {
             .collect(),
         purchased_at: p.purchase_date.unwrap_or_default(),
         file_size: None,
+        is_welcome_gift: p.is_welcome_gift,
     }
 }
 
@@ -266,7 +269,7 @@ pub async fn search(
     let rows = sqlx::query_as::<_, ProductRow>(
         "SELECT id, sku, name, format_type, daws, genres, bpm, key_sig, \
          creator_id, creator_name, creator_avatar_url, thumbnail_url, stream_url, waveform, \
-         download_links, purchased_at, file_size \
+         download_links, purchased_at, file_size, is_welcome_gift \
          FROM products \
          WHERE (name LIKE ? OR sku LIKE ? OR creator_name LIKE ? OR genres LIKE ?) \
          ORDER BY purchased_at DESC \
@@ -322,7 +325,7 @@ pub async fn load_all_from_db(db: &SqlitePool) -> Result<Vec<Product>, String> {
     let rows = sqlx::query_as::<_, ProductRow>(
         "SELECT id, sku, name, format_type, daws, genres, bpm, key_sig, \
          creator_id, creator_name, creator_avatar_url, thumbnail_url, stream_url, waveform, \
-         download_links, purchased_at, file_size \
+         download_links, purchased_at, file_size, is_welcome_gift \
          FROM products ORDER BY purchased_at DESC",
     )
     .fetch_all(db)
@@ -337,7 +340,7 @@ pub async fn get_product(db: &SqlitePool, id: u64) -> Result<Product, String> {
     let row = sqlx::query_as::<_, ProductRow>(
         "SELECT id, sku, name, format_type, daws, genres, bpm, key_sig, \
          creator_id, creator_name, creator_avatar_url, thumbnail_url, stream_url, waveform, \
-         download_links, purchased_at, file_size \
+         download_links, purchased_at, file_size, is_welcome_gift \
          FROM products WHERE id = ?",
     )
     .bind(id as i64)
@@ -359,8 +362,8 @@ async fn upsert_product(db: &SqlitePool, product: &Product) -> Result<(), String
         "INSERT OR REPLACE INTO products \
          (id, sku, name, format_type, daws, genres, bpm, key_sig, \
           creator_id, creator_name, creator_avatar_url, thumbnail_url, stream_url, waveform, \
-          download_links, purchased_at, file_size) \
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          download_links, purchased_at, file_size, is_welcome_gift) \
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(product.id as i64)
     .bind(&product.sku)
@@ -379,6 +382,7 @@ async fn upsert_product(db: &SqlitePool, product: &Product) -> Result<(), String
     .bind(&links_json)
     .bind(&product.purchased_at)
     .bind(product.file_size.map(|s| s as i64))
+    .bind(product.is_welcome_gift as i64)
     .execute(db)
     .await
     .map_err(|e| format!("DB upsert error: {e}"))?;
@@ -405,6 +409,8 @@ struct ProductRow {
     download_links: String,
     purchased_at: String,
     file_size: Option<i64>,
+    #[sqlx(default)]
+    is_welcome_gift: Option<i64>,
 }
 
 fn row_to_product(row: ProductRow) -> Product {
@@ -435,5 +441,6 @@ fn row_to_product(row: ProductRow) -> Product {
         download_links,
         purchased_at: row.purchased_at,
         file_size: row.file_size.map(|s| s as u64),
+        is_welcome_gift: row.is_welcome_gift.unwrap_or(0) != 0,
     }
 }

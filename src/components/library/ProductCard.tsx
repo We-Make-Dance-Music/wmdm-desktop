@@ -73,6 +73,16 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </div>
         )}
 
+        {/* Welcome gift ribbon */}
+        {product.isWelcomeGift && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-lg">
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M6 1l1.5 3L11 4.5l-2.5 2.5L9 10.5 6 9l-3 1.5.5-3.5L1 4.5l3.5-.5L6 1z"/>
+            </svg>
+            Free Gift
+          </div>
+        )}
+
         {/* Status indicators */}
         <div className="absolute top-2 right-2 flex items-center gap-1">
           {isDownloaded && (

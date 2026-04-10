@@ -47,7 +47,8 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), String> {
             download_links TEXT NOT NULL DEFAULT '[]',
             purchased_at TEXT NOT NULL DEFAULT '',
             file_size INTEGER,
-            raw_json TEXT NOT NULL DEFAULT '{}'
+            raw_json TEXT NOT NULL DEFAULT '{}',
+            is_welcome_gift INTEGER NOT NULL DEFAULT 0
         );
         "#,
     )
@@ -143,6 +144,7 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), String> {
     add_column_if_missing(pool, "products", "waveform", "TEXT").await;
     add_column_if_missing(pool, "products", "file_size", "INTEGER").await;
     add_column_if_missing(pool, "products", "raw_json", "TEXT NOT NULL DEFAULT '{}'").await;
+    add_column_if_missing(pool, "products", "is_welcome_gift", "INTEGER NOT NULL DEFAULT 0").await;
     add_column_if_missing(pool, "download_queue", "download_url", "TEXT").await;
 
     Ok(())

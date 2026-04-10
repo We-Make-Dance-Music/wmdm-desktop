@@ -53,6 +53,8 @@ pub struct Product {
     pub download_links: Vec<DownloadLink>,
     pub purchased_at: String,
     pub file_size: Option<u64>,
+    #[serde(default)]
+    pub is_welcome_gift: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
