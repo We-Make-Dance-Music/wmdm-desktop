@@ -1,0 +1,288 @@
+═══════════════════════════════════════════════════════════════════════
+WMDM Desktop App — Distribution Targets
+Software repositories, app directories, and discovery channels
+═══════════════════════════════════════════════════════════════════════
+
+Goal: Get the app listed in places where people search for software so
+they discover WMDM organically and come back. Long-tail SEO + passive
+traffic, not press releases.
+
+───────────────────────────────────────────────────────────────────────
+# CROSS-PLATFORM SOFTWARE DIRECTORIES (free listings)
+───────────────────────────────────────────────────────────────────────
+
+AlternativeTo                  https://alternativeto.net
+  Why: People search "Splice alternative" — list as alt to Splice + Loopcloud
+  Effort: 30 min, free, big SEO impact
+
+Product Hunt                   https://www.producthunt.com
+  Why: Permanent listing, ~2k visitors/day from category browsing
+  Effort: Schedule launch day, prepare assets
+
+Slant                          https://www.slant.co
+  Why: Comparison/recommendation site, ranks well on Google
+  Effort: 30 min, free
+
+StackShare                     https://stackshare.io
+  Why: Tech stack discovery, dev audience
+  Effort: 30 min, free
+
+G2                             https://www.g2.com
+  Why: Software review aggregator, B2B-leaning but accepts consumer apps
+  Effort: 1 hour for full profile
+
+Capterra                       https://www.capterra.com
+  Why: Owned by Gartner, enterprise software directory
+  Effort: 1 hour
+
+GetApp                         https://www.getapp.com
+  Why: Same parent as Capterra, separate listing
+  Effort: 30 min
+
+SourceForge                    https://sourceforge.net
+  Why: Old but still indexed by Google for "free software" searches
+  Effort: 1 hour, free
+
+───────────────────────────────────────────────────────────────────────
+# DOWNLOAD AGGREGATORS (high traffic, mostly passive)
+───────────────────────────────────────────────────────────────────────
+
+Softpedia                      https://www.softpedia.com
+  Why: 3M+ daily visits, lists Mac + Windows
+  Submit: https://www.softpedia.com/submit_form.shtml
+  Effort: 30 min
+
+Softonic                       https://en.softonic.com
+  Why: Massive traffic, especially European
+  Submit: contact form on site
+  Effort: 30 min
+
+FileHippo                      https://filehippo.com
+  Why: Trusted Windows software directory
+  Submit: https://filehippo.com/submit/
+  Effort: 30 min
+
+Uptodown                       https://en.uptodown.com
+  Why: Huge in Europe + LATAM
+  Submit: developer account
+  Effort: 1 hour
+
+MajorGeeks                     https://www.majorgeeks.com
+  Why: Trusted tech audience, manual curation
+  Submit: contact via site
+  Effort: 1 hour
+
+FossHub                        https://www.fosshub.com
+  Why: Free/open-source focus, high trust
+  Effort: 1 hour
+
+CNET Download.com              https://download.cnet.com
+  Why: Brand recognition, trusted by older users
+  Submit: paid + free options
+  Effort: 1-2 hours
+
+FilePuma                       https://www.filepuma.com
+  Why: Windows download mirror
+  Effort: 30 min
+
+───────────────────────────────────────────────────────────────────────
+# MAC-SPECIFIC DIRECTORIES
+───────────────────────────────────────────────────────────────────────
+
+MacUpdate                      https://www.macupdate.com
+  Why: Largest Mac software directory, $$ for premium
+  Submit: https://www.macupdate.com/info/submit-app
+  Effort: 1 hour
+
+Mac App Store                  https://developer.apple.com/app-store
+  Why: Maximum trust, but requires Apple Dev account ($99/yr)
+  Effort: Significant (sandboxing, review process)
+  Note: Tauri apps CAN ship to Mac App Store with effort
+
+Setapp                         https://setapp.com
+  Why: Curated Mac app subscription, revenue share
+  Submit: https://setapp.com/apply
+  Effort: Application + revenue sharing model
+
+Homebrew Cask                  https://github.com/Homebrew/homebrew-cask
+  Why: Power users install via `brew install --cask wmdm`
+  Submit: PR to homebrew-cask repo with cask file
+  Effort: 2 hours, free, very dev-friendly
+
+───────────────────────────────────────────────────────────────────────
+# WINDOWS-SPECIFIC DIRECTORIES
+───────────────────────────────────────────────────────────────────────
+
+Microsoft Store                https://partner.microsoft.com/dashboard
+  Why: Built into Windows 10/11, trust + auto-update
+  Effort: Significant (MSIX packaging)
+
+WinGet                         https://github.com/microsoft/winget-pkgs
+  Why: Microsoft's official package manager, `winget install wmdm`
+  Submit: PR to winget-pkgs repo
+  Effort: 2 hours, free
+
+Chocolatey                     https://community.chocolatey.org
+  Why: Most popular Windows package manager for power users
+  Submit: nuspec package + PR
+  Effort: 3 hours, free
+
+Scoop                          https://github.com/ScoopInstaller/Main
+  Why: Lightweight Windows package manager
+  Submit: PR to bucket
+  Effort: 1 hour, free
+
+Ninite                         https://ninite.com
+  Why: One-click installer for popular Windows apps
+  Submit: contact form
+  Effort: 30 min, hard to get accepted
+
+───────────────────────────────────────────────────────────────────────
+# DEVELOPER / TECH AUDIENCES
+───────────────────────────────────────────────────────────────────────
+
+GitHub                         https://github.com/We-Make-Dance-Music/wmdm-desktop
+  Why: Already there, but make sure README, topics, releases page polished
+  Effort: 1 hour to optimize discoverability
+  Add topics: tauri, rust, music-production, electron-alternative,
+             splice-alternative, daw, sample-manager
+
+GitHub Releases                https://github.com/We-Make-Dance-Music/wmdm-desktop/releases
+  Why: Direct download, indexed by Google
+  Effort: Tag v1.0.0, CI auto-creates release
+
+Tauri Showcase                 https://tauri.app/showcase
+  Why: Official Tauri app showcase
+  Submit: PR to tauri docs repo
+  Effort: 1 hour
+
+Awesome Tauri                  https://github.com/tauri-apps/awesome-tauri
+  Why: Curated list of Tauri apps
+  Submit: PR
+  Effort: 30 min
+
+Awesome Rust Apps              https://github.com/rust-unofficial/awesome-rust
+  Why: Discoverability for Rust devs
+  Submit: PR under "Audio" section
+  Effort: 30 min
+
+───────────────────────────────────────────────────────────────────────
+# MUSIC PRODUCTION SPECIFIC DIRECTORIES
+───────────────────────────────────────────────────────────────────────
+
+KVR Audio                      https://www.kvraudio.com
+  Why: THE place producers find new tools, ~500k MAU
+  Submit: https://www.kvraudio.com/get-listed.php (developer account)
+  Effort: 2 hours, mandatory listing for music tech
+
+Plugin Boutique                https://www.pluginboutique.com
+  Why: Music production marketplace
+  Note: Mostly for plugins, but they list utilities
+  Effort: Application required
+
+ProductionMusicLive            https://www.productionmusiclive.com
+  Why: Sample/template marketplace, partner potential
+  Effort: Outreach
+
+───────────────────────────────────────────────────────────────────────
+# REVIEW / COMPARISON SITES
+───────────────────────────────────────────────────────────────────────
+
+TrustRadius                    https://www.trustradius.com
+  Why: Software reviews, ranks on Google
+  Effort: 1 hour for vendor profile
+
+SoftwareAdvice                 https://www.softwareadvice.com
+  Why: Same parent as Capterra
+  Effort: 1 hour
+
+Crozdesk                       https://crozdesk.com
+  Why: Software discovery platform
+  Effort: 1 hour
+
+SaaSHub                        https://www.saashub.com
+  Why: Free SaaS directory, accepts desktop apps
+  Effort: 30 min
+
+───────────────────────────────────────────────────────────────────────
+# REGIONAL / LANGUAGE DIRECTORIES
+───────────────────────────────────────────────────────────────────────
+
+01net (France)                 https://www.01net.com
+Telecharger.com (France)       https://www.01net.com/telecharger
+Chip.de (Germany)              https://www.chip.de
+Heise Download (Germany)       https://www.heise.de/download
+Vector (Japan)                 https://www.vector.co.jp
+Forest (Japan)                 https://forest.watch.impress.co.jp
+
+───────────────────────────────────────────────────────────────────────
+# WIKI / KNOWLEDGE BASES
+───────────────────────────────────────────────────────────────────────
+
+Wikipedia: Comparison of audio sample libraries
+  Why: Add WMDM as a row in the comparison table
+  Effort: 30 min, but watch for editor pushback
+
+Wikipedia: Music production software list
+  Same approach
+  Effort: 30 min
+
+───────────────────────────────────────────────────────────────────────
+# PRIORITY ORDER (do these first)
+───────────────────────────────────────────────────────────────────────
+
+WEEK 1 — Foundation listings (1 day total work):
+  1. AlternativeTo  (alt to Splice/Loopcloud)
+  2. Product Hunt  (schedule launch)
+  3. KVR Audio  (essential for music production audience)
+  4. Softpedia
+  5. MacUpdate
+  6. GitHub repo cleanup (topics, README, releases)
+
+WEEK 2 — Package managers (1 day total work):
+  7. Homebrew Cask  (Mac power users)
+  8. WinGet  (Windows power users)
+  9. Chocolatey  (Windows)
+  10. Scoop  (Windows)
+
+WEEK 3 — Long-tail directories (1 day total work):
+  11. Softonic
+  12. FileHippo
+  13. Uptodown
+  14. SourceForge
+  15. FossHub
+  16. MajorGeeks
+  17. Slant
+  18. StackShare
+
+WEEK 4 — Tauri/Rust/dev community (half day):
+  19. Tauri Showcase
+  20. Awesome Tauri
+  21. Awesome Rust Apps
+
+ONGOING — Music press (low effort, high coverage):
+  22. KVR News submission
+  23. Bedroom Producers Blog (BPB) outreach
+  24. Gearnews
+  25. CDM (Create Digital Music)
+
+───────────────────────────────────────────────────────────────────────
+# ESSENTIAL ASSETS TO PREPARE FIRST
+───────────────────────────────────────────────────────────────────────
+
+Before submitting anywhere, have these ready:
+
+  □ App icon (512x512 PNG, transparent)
+  □ App icon (1024x1024 PNG)
+  □ 3-5 screenshots (1920x1080)
+  □ App preview video (30-60 seconds)
+  □ Short description (160 chars)
+  □ Long description (500 words)
+  □ Feature bullet list (5-10 items)
+  □ Press kit folder (logos, screenshots, brand colors)
+  □ Direct download URLs (Mac ARM, Mac Intel, Windows)
+  □ Version history / changelog
+  □ Privacy policy URL
+  □ Terms of service URL
+  □ Support / contact email
+  □ Tags/categories
