@@ -20,7 +20,7 @@ impl ApiClient {
     pub fn new() -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
-            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) WMDM-Desktop/1.0")
             .build()
             .expect("Failed to build HTTP client");
 
