@@ -10,6 +10,9 @@ import { FormatBadge } from "../components/common/Badge";
 import ProductCard from "../components/library/ProductCard";
 import ProductDetail from "../components/library/ProductDetail";
 import FilterBar from "../components/library/FilterBar";
+import SampleLibraryPanel from "../components/library/SampleLibraryPanel";
+
+type LibraryTab = "products" | "samples";
 
 function SearchIcon() {
   return (
@@ -120,6 +123,7 @@ export default function LibraryPage() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [tab, setTab] = useState<LibraryTab>("products");
   const favoriteIds = useProductStore((s) => s.favoriteIds);
   const downloadedIds = useProductStore((s) => s.downloadedIds);
 
@@ -190,6 +194,37 @@ export default function LibraryPage() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Top-level tab switch: Products ↔ Sample Library (Bridge) */}
+      <div className="shrink-0 px-6 pt-3 flex items-center gap-1 border-b border-wmdm-border">
+        <button
+          onClick={() => setTab("products")}
+          className={`px-3 py-1.5 text-xs font-medium rounded-t-md transition-colors ${
+            tab === "products"
+              ? "text-wmdm-accent border-b-2 border-wmdm-accent"
+              : "text-wmdm-text-muted hover:text-wmdm-text"
+          }`}
+        >
+          Products
+        </button>
+        <button
+          onClick={() => setTab("samples")}
+          className={`px-3 py-1.5 text-xs font-medium rounded-t-md transition-colors ${
+            tab === "samples"
+              ? "text-wmdm-accent border-b-2 border-wmdm-accent"
+              : "text-wmdm-text-muted hover:text-wmdm-text"
+          }`}
+        >
+          Sample Library
+          <span className="ml-1.5 text-[9px] font-semibold px-1 py-0.5 rounded bg-wmdm-accent/15 text-wmdm-accent">
+            BRIDGE
+          </span>
+        </button>
+      </div>
+
+      {tab === "samples" ? (
+        <SampleLibraryPanel />
+      ) : (
+      <>
       {/* Header */}
       <header className="shrink-0 px-6 pt-4 pb-4 space-y-4">
         {/* Actions row */}
@@ -507,6 +542,8 @@ export default function LibraryPage() {
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
         />
+      )}
+      </>
       )}
     </div>
   );

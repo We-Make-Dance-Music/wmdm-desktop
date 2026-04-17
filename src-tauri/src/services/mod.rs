@@ -5,3 +5,4 @@ pub mod download_engine;
 pub mod file_placement;
 pub mod plugin_scanner;
 pub mod product_sync;
+pub mod sample_indexer;

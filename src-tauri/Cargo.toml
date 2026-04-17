@@ -34,6 +34,13 @@ futures = "0.3"
 tokio-util = { version = "0.7", features = ["io"] }
 urlencoding = "2"
 
+# Bridge: sample library indexer (see plans/calm-squishing-frog.md)
+# Pure-Rust audio decode + FFT — avoids libaubio system dep for prototype.
+symphonia = { version = "0.5", features = ["wav", "aiff", "flac", "mp3", "ogg", "pcm", "aac", "isomp4"] }
+rustfft = "6"
+walkdir = "2"
+notify = "7"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"

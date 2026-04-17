@@ -261,3 +261,46 @@ export async function revealInFinder(path: string): Promise<void> {
 export async function pickFolder(): Promise<string | null> {
   return invoke<string | null>("pick_folder");
 }
+
+// --- Bridge: sample library ---
+
+export interface LibraryRoot {
+  id: number;
+  path: string;
+  kind: string;
+  enabled: boolean;
+  addedAt: string;
+  fileCount: number;
+  taggedCount: number;
+}
+
+export interface IndexStatus {
+  scanning: boolean;
+  totalFiles: number;
+  taggedFiles: number;
+  currentFile: string | null;
+}
+
+export async function listLibraryRoots(): Promise<LibraryRoot[]> {
+  return invoke<LibraryRoot[]>("list_library_roots");
+}
+
+export async function addLibraryRoot(path: string, kind?: string): Promise<number> {
+  return invoke<number>("add_library_root", { path, kind });
+}
+
+export async function removeLibraryRoot(id: number): Promise<void> {
+  return invoke<void>("remove_library_root", { id });
+}
+
+export async function setLibraryRootEnabled(id: number, enabled: boolean): Promise<void> {
+  return invoke<void>("set_library_root_enabled", { id, enabled });
+}
+
+export async function scanLibraryRoots(): Promise<void> {
+  return invoke<void>("scan_library_roots");
+}
+
+export async function getIndexStatus(): Promise<IndexStatus> {
+  return invoke<IndexStatus>("get_index_status");
+}

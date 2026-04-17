@@ -280,11 +280,38 @@ pub fn run() {
                 engine_clone.load_from_db(&db_clone).await;
             });
 
+            // Seed default library roots for Bridge plugin and initialize indexer state.
+            let db_for_seed = db.clone();
+            let download_path_for_seed = std::path::PathBuf::from(
+                tauri::async_runtime::block_on(async {
+                    let row: Option<(String,)> =
+                        sqlx::query_as("SELECT value FROM settings WHERE key = 'download_path'")
+                            .fetch_optional(&db_for_seed)
+                            .await
+                            .ok()
+                            .flatten();
+                    row.map(|r| r.0)
+                        .unwrap_or_else(platform::default_download_path)
+                }),
+            );
+            tauri::async_runtime::block_on(async {
+                if let Err(e) = services::sample_indexer::seed_default_roots(
+                    &db_for_seed,
+                    &download_path_for_seed,
+                )
+                .await
+                {
+                    log::warn!("seed_default_roots: {e}");
+                }
+            });
+            let indexer_state = services::sample_indexer::IndexerState::new();
+
             // Manage state
             app.manage(api_client);
             app.manage(auth_service);
             app.manage(download_engine);
             app.manage(db);
+            app.manage(indexer_state);
 
             Ok(())
         })
@@ -335,6 +362,13 @@ pub fn run() {
             commands::settings::set_download_path,
             commands::settings::reveal_in_finder,
             commands::settings::pick_folder,
+            // Bridge library roots + indexer
+            commands::library_roots::list_library_roots,
+            commands::library_roots::add_library_root,
+            commands::library_roots::remove_library_root,
+            commands::library_roots::set_library_root_enabled,
+            commands::library_roots::scan_library_roots,
+            commands::library_roots::get_index_status,
         ])
         .run(tauri::generate_context!())
         .expect("Error running WMDM Desktop App");

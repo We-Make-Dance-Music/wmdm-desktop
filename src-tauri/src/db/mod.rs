@@ -138,6 +138,80 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), String> {
     .await
     .map_err(|e| format!("Migration failed (daw_config): {e}"))?;
 
+    // Bridge plugin: sample library tables (see ~/.claude/plans/calm-squishing-frog.md).
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS library_roots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL UNIQUE,
+            kind TEXT NOT NULL,
+            enabled INTEGER NOT NULL DEFAULT 1,
+            added_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Migration failed (library_roots): {e}"))?;
+
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS sample_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            root_id INTEGER NOT NULL REFERENCES library_roots(id) ON DELETE CASCADE,
+            rel_path TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            ext TEXT NOT NULL,
+            size_bytes INTEGER NOT NULL,
+            mtime INTEGER NOT NULL,
+            sha1 TEXT,
+            product_id INTEGER,
+            indexed_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(root_id, rel_path)
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Migration failed (sample_files): {e}"))?;
+
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS sample_tags (
+            sample_id INTEGER PRIMARY KEY REFERENCES sample_files(id) ON DELETE CASCADE,
+            duration_sec REAL,
+            bpm REAL,
+            bpm_confidence REAL,
+            key_name TEXT,
+            category TEXT,
+            shape TEXT,
+            ml_confidence REAL,
+            tagged_at TEXT NOT NULL DEFAULT (datetime('now')),
+            tagger_version TEXT
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Migration failed (sample_tags): {e}"))?;
+
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_sample_files_product ON sample_files(product_id);")
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Migration failed (idx product): {e}"))?;
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_sample_files_ext ON sample_files(ext);")
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Migration failed (idx ext): {e}"))?;
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_sample_tags_category ON sample_tags(category);")
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Migration failed (idx category): {e}"))?;
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_sample_tags_bpm ON sample_tags(bpm);")
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Migration failed (idx bpm): {e}"))?;
+
     // Schema upgrades — add columns that may be missing from older installs.
     // ALTER TABLE ADD COLUMN is safe to call even if the column exists (SQLite ignores duplicates in some versions),
     // but we wrap in a helper that silently ignores "duplicate column" errors.
