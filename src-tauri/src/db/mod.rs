@@ -220,6 +220,8 @@ async fn run_migrations(pool: &SqlitePool) -> Result<(), String> {
     add_column_if_missing(pool, "products", "raw_json", "TEXT NOT NULL DEFAULT '{}'").await;
     add_column_if_missing(pool, "products", "is_welcome_gift", "INTEGER NOT NULL DEFAULT 0").await;
     add_column_if_missing(pool, "download_queue", "download_url", "TEXT").await;
+    // Bridge: 128 abs-max peaks per file for inline waveform thumbnails.
+    add_column_if_missing(pool, "sample_files", "peaks", "BLOB").await;
 
     Ok(())
 }

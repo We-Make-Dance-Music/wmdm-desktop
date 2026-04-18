@@ -21,7 +21,14 @@ use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 
 const AUDIO_EXTS: &[&str] = &["wav", "aiff", "aif", "flac", "mp3", "ogg", "m4a"];
-const TAGGER_VERSION: &str = "heuristic-key-1";
+const TAGGER_VERSION: &str = "heuristic-key-peaks-rgb-hires-1";
+/// Target peak resolution per second of audio. 200 ≈ 4.6× a typical 44.1kHz
+/// frame bucket size, giving crisp waveforms without pushing blob size into MB.
+const PEAKS_PER_SECOND: usize = 200;
+const PEAK_BUCKETS_MIN: usize = 256;
+const PEAK_BUCKETS_MAX: usize = 8192;
+/// Number of frequency bands per bucket (R=low, G=mid, B=high).
+const PEAK_BANDS: usize = 3;
 const TAG_CONCURRENCY: usize = 3;
 const MAX_DECODE_SECONDS: f32 = 30.0; // cap long files — enough for BPM
 const PROGRESS_EVENT: &str = "sample_index_progress";
@@ -296,7 +303,7 @@ pub async fn tag_pending(
                 .await
                 .unwrap_or_else(|_| Err("join error".into()));
 
-            let (duration, bpm, bpm_conf, key_name, category, shape) = match analysis {
+            let (duration, bpm, bpm_conf, key_name, category, shape, peaks) = match analysis {
                 Ok(a) => (
                     Some(a.duration_sec),
                     a.bpm,
@@ -304,18 +311,17 @@ pub async fn tag_pending(
                     a.key_name,
                     a.category,
                     a.shape,
+                    a.peaks,
                 ),
-                Err(_) => {
-                    // Fallback: filename-based category, unknown audio properties.
-                    (
-                        None,
-                        None,
-                        0.0,
-                        None,
-                        classify_by_filename(&file_name).map(String::from),
-                        "phrase".to_string(),
-                    )
-                }
+                Err(_) => (
+                    None,
+                    None,
+                    0.0,
+                    None,
+                    classify_by_filename(&file_name).map(String::from),
+                    "phrase".to_string(),
+                    Vec::new(),
+                ),
             };
 
             let _ = sqlx::query(
@@ -333,6 +339,13 @@ pub async fn tag_pending(
             .bind(TAGGER_VERSION)
             .execute(&pool)
             .await;
+            if !peaks.is_empty() {
+                let _ = sqlx::query("UPDATE sample_files SET peaks = ? WHERE id = ?")
+                    .bind(peaks)
+                    .bind(id)
+                    .execute(&pool)
+                    .await;
+            }
 
             let mut c = counter.lock().await;
             *c += 1;
@@ -373,6 +386,8 @@ struct Analysis {
     key_name: Option<String>,
     category: Option<String>,
     shape: String,
+    /// 128 abs-max peaks (full file) packed as little-endian f32 bytes. Empty on failure.
+    peaks: Vec<u8>,
 }
 
 fn analyze_file(path: &Path) -> Result<Analysis, String> {
@@ -386,6 +401,9 @@ fn analyze_file(path: &Path) -> Result<Analysis, String> {
     )
     .map(String::from);
     let shape = classify_shape(duration_sec, bpm).to_string();
+    // Peaks are computed in a separate streaming pass so we can cover the full
+    // file (the analyzer's mono decode is capped at MAX_DECODE_SECONDS).
+    let peaks = compute_peaks(path).unwrap_or_default();
     Ok(Analysis {
         duration_sec,
         bpm,
@@ -393,7 +411,167 @@ fn analyze_file(path: &Path) -> Result<Analysis, String> {
         key_name,
         category,
         shape,
+        peaks,
     })
+}
+
+/// RBJ biquad filter (Direct Form I, transposed). Computed coefficients
+/// per audio EQ Cookbook formulas — used to split each sample into low /
+/// mid / high band peaks for colored waveform rendering.
+struct Biquad {
+    b0: f32, b1: f32, b2: f32,
+    a1: f32, a2: f32,
+    z1: f32, z2: f32,
+}
+
+impl Biquad {
+    fn lpf(fc: f32, sr: f32, q: f32) -> Self {
+        let w0 = 2.0 * std::f32::consts::PI * fc / sr;
+        let cs = w0.cos();
+        let sn = w0.sin();
+        let alpha = sn / (2.0 * q);
+        let a0 = 1.0 + alpha;
+        let b0 = (1.0 - cs) / 2.0 / a0;
+        let b1 = (1.0 - cs) / a0;
+        let b2 = (1.0 - cs) / 2.0 / a0;
+        let a1 = -2.0 * cs / a0;
+        let a2 = (1.0 - alpha) / a0;
+        Self { b0, b1, b2, a1, a2, z1: 0.0, z2: 0.0 }
+    }
+    fn hpf(fc: f32, sr: f32, q: f32) -> Self {
+        let w0 = 2.0 * std::f32::consts::PI * fc / sr;
+        let cs = w0.cos();
+        let sn = w0.sin();
+        let alpha = sn / (2.0 * q);
+        let a0 = 1.0 + alpha;
+        let b0 = (1.0 + cs) / 2.0 / a0;
+        let b1 = -(1.0 + cs) / a0;
+        let b2 = (1.0 + cs) / 2.0 / a0;
+        let a1 = -2.0 * cs / a0;
+        let a2 = (1.0 - alpha) / a0;
+        Self { b0, b1, b2, a1, a2, z1: 0.0, z2: 0.0 }
+    }
+    fn bpf(fc: f32, sr: f32, q: f32) -> Self {
+        let w0 = 2.0 * std::f32::consts::PI * fc / sr;
+        let cs = w0.cos();
+        let sn = w0.sin();
+        let alpha = sn / (2.0 * q);
+        let a0 = 1.0 + alpha;
+        let b0 = alpha / a0;
+        let b1 = 0.0;
+        let b2 = -alpha / a0;
+        let a1 = -2.0 * cs / a0;
+        let a2 = (1.0 - alpha) / a0;
+        Self { b0, b1, b2, a1, a2, z1: 0.0, z2: 0.0 }
+    }
+    #[inline]
+    fn process(&mut self, x: f32) -> f32 {
+        let y = self.b0 * x + self.z1;
+        self.z1 = self.b1 * x - self.a1 * y + self.z2;
+        self.z2 = self.b2 * x - self.a2 * y;
+        y
+    }
+}
+
+/// Streaming peak summary — decodes the full file via symphonia, splits each
+/// sample into 3 bands (low/mid/high) via biquads, reduces to PEAK_BUCKETS
+/// buckets of (low_peak, mid_peak, high_peak). Returns LE f32 bytes
+/// (PEAK_BUCKETS * PEAK_BANDS * 4).
+fn compute_peaks(path: &Path) -> Result<Vec<u8>, String> {
+    let file = std::fs::File::open(path).map_err(|e| format!("open: {e}"))?;
+    let mss = MediaSourceStream::new(Box::new(file), Default::default());
+    let mut hint = Hint::new();
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        hint.with_extension(ext);
+    }
+    let probed = symphonia::default::get_probe()
+        .format(&hint, mss, &FormatOptions::default(), &MetadataOptions::default())
+        .map_err(|e| format!("probe: {e}"))?;
+    let mut format = probed.format;
+    let track = format
+        .default_track()
+        .ok_or_else(|| "no default track".to_string())?;
+    let track_id = track.id;
+    let cp = track.codec_params.clone();
+    let channels = cp.channels.ok_or("no channels")?.count().max(1);
+    let total_frames = cp.n_frames.unwrap_or(0) as usize;
+    if total_frames == 0 {
+        return Err("unknown length".into());
+    }
+
+    let sr = cp.sample_rate.ok_or("no sample rate")? as f32;
+    let mut low  = Biquad::lpf(250.0,  sr, 0.707);
+    let mut mid  = Biquad::bpf(1200.0, sr, 0.5);
+    let mut high = Biquad::hpf(4000.0, sr, 0.707);
+
+    // Adaptive bucket count: ~PEAKS_PER_SECOND peaks per audio second,
+    // clamped to [MIN, MAX]. Short loops get enough detail to fill a row;
+    // long stems stay bounded.
+    let duration_sec = (total_frames as f32) / sr;
+    let target_buckets = ((duration_sec as usize) * PEAKS_PER_SECOND)
+        .max(PEAK_BUCKETS_MIN)
+        .min(PEAK_BUCKETS_MAX);
+    let num_buckets = target_buckets.max(1);
+    let bucket_size = (total_frames / num_buckets).max(1);
+    // Per-bucket peaks: [low, mid, high].
+    let mut peaks = vec![[0.0f32; PEAK_BANDS]; num_buckets];
+    let mut current_bucket = 0usize;
+    let mut frames_in_bucket = 0usize;
+
+    let mut decoder = symphonia::default::get_codecs()
+        .make(&cp, &DecoderOptions::default())
+        .map_err(|e| format!("make decoder: {e}"))?;
+    let mut sample_buf: Option<SampleBuffer<f32>> = None;
+
+    loop {
+        let packet = match format.next_packet() {
+            Ok(p) => p,
+            Err(symphonia::core::errors::Error::IoError(ref e))
+                if e.kind() == std::io::ErrorKind::UnexpectedEof =>
+            {
+                break;
+            }
+            Err(e) => return Err(format!("next_packet: {e}")),
+        };
+        if packet.track_id() != track_id {
+            continue;
+        }
+        let decoded = match decoder.decode(&packet) {
+            Ok(d) => d,
+            Err(symphonia::core::errors::Error::DecodeError(_)) => continue,
+            Err(e) => return Err(format!("decode: {e}")),
+        };
+        if sample_buf.is_none() {
+            sample_buf = Some(SampleBuffer::<f32>::new(decoded.capacity() as u64, *decoded.spec()));
+        }
+        let sb = sample_buf.as_mut().unwrap();
+        sb.copy_interleaved_ref(decoded);
+        for frame in sb.samples().chunks(channels) {
+            let mut sum = 0.0f32;
+            for &s in frame { sum += s; }
+            let x = sum / channels as f32;
+            let l = low.process(x).abs();
+            let m = mid.process(x).abs();
+            let h = high.process(x).abs();
+            let bi = current_bucket.min(num_buckets - 1);
+            if l > peaks[bi][0] { peaks[bi][0] = l; }
+            if m > peaks[bi][1] { peaks[bi][1] = m; }
+            if h > peaks[bi][2] { peaks[bi][2] = h; }
+            frames_in_bucket += 1;
+            if frames_in_bucket >= bucket_size {
+                current_bucket = (current_bucket + 1).min(num_buckets - 1);
+                frames_in_bucket = 0;
+            }
+        }
+    }
+
+    let mut out = Vec::with_capacity(num_buckets * PEAK_BANDS * 4);
+    for bucket in &peaks {
+        for v in bucket {
+            out.extend_from_slice(&v.to_le_bytes());
+        }
+    }
+    Ok(out)
 }
 
 /// Decode an audio file to mono f32. Caps the return buffer at MAX_DECODE_SECONDS
@@ -950,7 +1128,7 @@ mod tests {
                 .and_then(|s| s.to_str())
                 .unwrap_or("")
                 .to_string();
-            let (dur, bpm, conf, key_name, cat, shape) = match analyze_file(&full) {
+            let (dur, bpm, conf, key_name, cat, shape, peaks) = match analyze_file(&full) {
                 Ok(a) => (
                     Some(a.duration_sec),
                     a.bpm,
@@ -958,6 +1136,7 @@ mod tests {
                     a.key_name,
                     a.category,
                     a.shape,
+                    a.peaks,
                 ),
                 Err(_) => {
                     errors += 1;
@@ -968,6 +1147,7 @@ mod tests {
                         None,
                         classify_by_filename(&file_name).map(String::from),
                         "phrase".to_string(),
+                        Vec::new(),
                     )
                 }
             };
@@ -986,6 +1166,13 @@ mod tests {
             .bind(TAGGER_VERSION)
             .execute(&pool)
             .await;
+            if !peaks.is_empty() {
+                let _ = sqlx::query("UPDATE sample_files SET peaks = ? WHERE id = ?")
+                    .bind(peaks)
+                    .bind(id)
+                    .execute(&pool)
+                    .await;
+            }
             tagged += 1;
             if i % 200 == 0 {
                 println!("  {tagged}/{} tagged", pending.len());
