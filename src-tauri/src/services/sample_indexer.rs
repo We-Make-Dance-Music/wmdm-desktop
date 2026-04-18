@@ -21,7 +21,7 @@ use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 
 const AUDIO_EXTS: &[&str] = &["wav", "aiff", "aif", "flac", "mp3", "ogg", "m4a"];
-const TAGGER_VERSION: &str = "heuristic-key-peaks-rgb-hires-1";
+const TAGGER_VERSION: &str = "heuristic-spectral-1";
 /// Target peak resolution per second of audio. 200 ≈ 4.6× a typical 44.1kHz
 /// frame bucket size, giving crisp waveforms without pushing blob size into MB.
 const PEAKS_PER_SECOND: usize = 200;
@@ -394,12 +394,15 @@ fn analyze_file(path: &Path) -> Result<Analysis, String> {
     let (samples, sample_rate, duration_sec) = decode_mono(path)?;
     let (bpm, bpm_confidence) = detect_bpm(&samples, sample_rate);
     let key_name = detect_key(&samples, sample_rate);
+    // Filename-first (fast, very specific), then spectral fallback (covers samples
+    // with opaque names like "04.Keys.wav" or "0001 13-Audio.wav").
     let category = classify_by_filename(
         path.file_name()
             .and_then(|s| s.to_str())
             .unwrap_or(""),
     )
-    .map(String::from);
+    .map(String::from)
+    .or_else(|| classify_by_spectrum(&samples, sample_rate, duration_sec).map(String::from));
     let shape = classify_shape(duration_sec, bpm).to_string();
     // Peaks are computed in a separate streaming pass so we can cover the full
     // file (the analyzer's mono decode is capped at MAX_DECODE_SECONDS).
@@ -745,6 +748,121 @@ fn detect_bpm(samples: &[f32], sample_rate: u32) -> (Option<f32>, f32) {
     }
     let confidence = ((ratio - 1.3) / 0.7).clamp(0.0, 1.0);
     (Some(best_bpm), confidence)
+}
+
+/// Spectral-features classifier: looks at zero-crossing rate, spectral centroid,
+/// spectral flatness and duration to guess one of drum/vocal/bass/synth/fx.
+/// Conservative — returns None when features don't match a strong bucket.
+fn classify_by_spectrum(samples: &[f32], sample_rate: u32, duration_sec: f32) -> Option<&'static str> {
+    use rustfft::{num_complex::Complex, FftPlanner};
+
+    if samples.len() < (sample_rate as usize / 4) {
+        return None; // too short for meaningful features
+    }
+
+    // Zero-crossing rate (high → noise/percussive, low → tonal).
+    let mut zcr = 0usize;
+    for w in samples.windows(2) {
+        if (w[0] >= 0.0) != (w[1] >= 0.0) {
+            zcr += 1;
+        }
+    }
+    let zcr_rate = zcr as f32 / samples.len() as f32;
+
+    // Total RMS (energy).
+    let mean_sq: f32 = samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32;
+    let rms = mean_sq.sqrt();
+    if rms < 1e-4 {
+        return None;
+    }
+
+    // Single FFT over the middle of the file for spectral features.
+    const FFT_SIZE: usize = 4096;
+    if samples.len() < FFT_SIZE {
+        return None;
+    }
+    let mid = samples.len() / 2;
+    let start = mid.saturating_sub(FFT_SIZE / 2);
+    let end = (start + FFT_SIZE).min(samples.len());
+    let win = &samples[start..end];
+
+    let mut planner = FftPlanner::<f32>::new();
+    let fft = planner.plan_fft_forward(FFT_SIZE);
+    let hann: Vec<f32> = (0..FFT_SIZE)
+        .map(|i| 0.5 - 0.5 * (2.0 * std::f32::consts::PI * i as f32 / FFT_SIZE as f32).cos())
+        .collect();
+    let mut buf: Vec<Complex<f32>> = (0..FFT_SIZE)
+        .map(|i| Complex::new(win[i] * hann[i], 0.0))
+        .collect();
+    fft.process(&mut buf);
+
+    let bin_hz = sample_rate as f32 / FFT_SIZE as f32;
+    let mut energy = 0.0f32;
+    let mut centroid_num = 0.0f32;
+    // Spectral flatness = geometric_mean / arithmetic_mean (in log form for stability).
+    let mut log_sum = 0.0f32;
+    let mut nz_bins = 0usize;
+    let mut low_energy = 0.0f32;    // < 200 Hz
+    let mut mid_energy = 0.0f32;    // 200–2000 Hz
+    let mut high_energy = 0.0f32;   // > 2000 Hz
+    for k in 1..(FFT_SIZE / 2) {
+        let freq = k as f32 * bin_hz;
+        let mag = buf[k].norm();
+        if freq < 60.0 || freq > 12000.0 {
+            continue;
+        }
+        energy += mag;
+        centroid_num += mag * freq;
+        if mag > 1e-8 {
+            log_sum += mag.ln();
+            nz_bins += 1;
+        }
+        if freq < 200.0 {
+            low_energy += mag;
+        } else if freq < 2000.0 {
+            mid_energy += mag;
+        } else {
+            high_energy += mag;
+        }
+    }
+    if energy < 1e-6 {
+        return None;
+    }
+    let centroid = centroid_num / energy;
+    let mean_mag = energy / nz_bins.max(1) as f32;
+    let geo_mean = (log_sum / nz_bins.max(1) as f32).exp();
+    let flatness = (geo_mean / mean_mag).clamp(0.0, 1.0);
+
+    let low_ratio  = low_energy  / energy;
+    let mid_ratio  = mid_energy  / energy;
+    let high_ratio = high_energy / energy;
+
+    // Decision rules — ordered by specificity.
+    // Very short + high ZCR + energetic highs → drum hit.
+    if duration_sec < 2.0 && zcr_rate > 0.08 && high_ratio > 0.25 {
+        return Some("drum");
+    }
+    // High flatness + sustained = noise / FX (risers, sweeps, atmospheres).
+    if flatness > 0.35 && duration_sec > 2.0 {
+        return Some("fx");
+    }
+    // Dominantly low-frequency content = bass.
+    if low_ratio > 0.55 && centroid < 300.0 {
+        return Some("bass");
+    }
+    // Mid-heavy, centroid in the vocal-formant band, low ZCR → vocal.
+    if mid_ratio > 0.55 && centroid > 400.0 && centroid < 1800.0 && zcr_rate < 0.1 {
+        return Some("vocal");
+    }
+    // Tonal (low ZCR) with broader spectrum → synth-like.
+    if zcr_rate < 0.12 && low_ratio < 0.5 {
+        return Some("synth");
+    }
+    // Short + broadband + high centroid → percussion fallback.
+    if duration_sec < 1.5 && centroid > 1500.0 {
+        return Some("drum");
+    }
+    None
 }
 
 /// First-pass category classifier based on filename tokens.
