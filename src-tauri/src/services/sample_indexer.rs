@@ -21,7 +21,7 @@ use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 
 const AUDIO_EXTS: &[&str] = &["wav", "aiff", "aif", "flac", "mp3", "ogg", "m4a"];
-const TAGGER_VERSION: &str = "heuristic-1";
+const TAGGER_VERSION: &str = "heuristic-key-1";
 const TAG_CONCURRENCY: usize = 3;
 const MAX_DECODE_SECONDS: f32 = 30.0; // cap long files — enough for BPM
 const PROGRESS_EVENT: &str = "sample_index_progress";
@@ -296,20 +296,22 @@ pub async fn tag_pending(
                 .await
                 .unwrap_or_else(|_| Err("join error".into()));
 
-            let (duration, bpm, bpm_conf, category, shape) = match analysis {
+            let (duration, bpm, bpm_conf, key_name, category, shape) = match analysis {
                 Ok(a) => (
                     Some(a.duration_sec),
                     a.bpm,
                     a.bpm_confidence,
+                    a.key_name,
                     a.category,
                     a.shape,
                 ),
                 Err(_) => {
-                    // Fallback: filename-based category, unknown duration/BPM.
+                    // Fallback: filename-based category, unknown audio properties.
                     (
                         None,
                         None,
                         0.0,
+                        None,
                         classify_by_filename(&file_name).map(String::from),
                         "phrase".to_string(),
                     )
@@ -318,13 +320,14 @@ pub async fn tag_pending(
 
             let _ = sqlx::query(
                 "INSERT OR REPLACE INTO sample_tags
-                 (sample_id, duration_sec, bpm, bpm_confidence, category, shape, tagged_at, tagger_version)
-                 VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?)",
+                 (sample_id, duration_sec, bpm, bpm_confidence, key_name, category, shape, tagged_at, tagger_version)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)",
             )
             .bind(id)
             .bind(duration)
             .bind(bpm)
             .bind(bpm_conf)
+            .bind(key_name)
             .bind(category)
             .bind(shape)
             .bind(TAGGER_VERSION)
@@ -367,6 +370,7 @@ struct Analysis {
     duration_sec: f32,
     bpm: Option<f32>,
     bpm_confidence: f32,
+    key_name: Option<String>,
     category: Option<String>,
     shape: String,
 }
@@ -374,6 +378,7 @@ struct Analysis {
 fn analyze_file(path: &Path) -> Result<Analysis, String> {
     let (samples, sample_rate, duration_sec) = decode_mono(path)?;
     let (bpm, bpm_confidence) = detect_bpm(&samples, sample_rate);
+    let key_name = detect_key(&samples, sample_rate);
     let category = classify_by_filename(
         path.file_name()
             .and_then(|s| s.to_str())
@@ -385,6 +390,7 @@ fn analyze_file(path: &Path) -> Result<Analysis, String> {
         duration_sec,
         bpm,
         bpm_confidence,
+        key_name,
         category,
         shape,
     })
@@ -603,6 +609,118 @@ fn classify_by_filename(name: &str) -> Option<&'static str> {
     None
 }
 
+/// Key detection via Krumhansl-Schmuckler profile correlation on a chromagram.
+/// Returns "Cm", "F#", etc. (None if signal too weak/atonal).
+fn detect_key(samples: &[f32], sample_rate: u32) -> Option<String> {
+    use rustfft::{num_complex::Complex, FftPlanner};
+
+    if samples.len() < (sample_rate as usize) {
+        return None;
+    }
+    const FFT_SIZE: usize = 4096;
+    const HOP: usize = 2048;
+    if samples.len() < FFT_SIZE {
+        return None;
+    }
+
+    let mut planner = FftPlanner::<f32>::new();
+    let fft = planner.plan_fft_forward(FFT_SIZE);
+
+    // Hann window.
+    let hann: Vec<f32> = (0..FFT_SIZE)
+        .map(|i| {
+            0.5 - 0.5 * (2.0 * std::f32::consts::PI * i as f32 / FFT_SIZE as f32).cos()
+        })
+        .collect();
+
+    let mut chroma = [0.0f32; 12];
+    let mut buf: Vec<Complex<f32>> = vec![Complex::new(0.0, 0.0); FFT_SIZE];
+    let bin_freq = sample_rate as f32 / FFT_SIZE as f32;
+
+    let mut frames = 0usize;
+    let mut pos = 0usize;
+    while pos + FFT_SIZE <= samples.len() {
+        for i in 0..FFT_SIZE {
+            buf[i] = Complex::new(samples[pos + i] * hann[i], 0.0);
+        }
+        fft.process(&mut buf);
+        for k in 1..(FFT_SIZE / 2) {
+            let freq = k as f32 * bin_freq;
+            if freq < 65.0 || freq > 5000.0 {
+                continue;
+            }
+            let mag = buf[k].norm();
+            // MIDI note number from frequency, 69 = A4.
+            let n = 12.0 * (freq / 440.0).log2() + 69.0;
+            let pc = (n.round() as i32).rem_euclid(12) as usize;
+            chroma[pc] += mag;
+        }
+        pos += HOP;
+        frames += 1;
+    }
+    if frames == 0 {
+        return None;
+    }
+
+    // Krumhansl-Schmuckler key profiles (relative to tonic).
+    const MAJOR: [f32; 12] = [
+        6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88,
+    ];
+    const MINOR: [f32; 12] = [
+        6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17,
+    ];
+    const NAMES: [&str; 12] = [
+        "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+    ];
+
+    fn pearson(a: &[f32; 12], b: &[f32; 12]) -> f32 {
+        let mean_a: f32 = a.iter().sum::<f32>() / 12.0;
+        let mean_b: f32 = b.iter().sum::<f32>() / 12.0;
+        let (mut num, mut da, mut db) = (0.0f32, 0.0f32, 0.0f32);
+        for i in 0..12 {
+            let xa = a[i] - mean_a;
+            let xb = b[i] - mean_b;
+            num += xa * xb;
+            da += xa * xa;
+            db += xb * xb;
+        }
+        if da < 1e-9 || db < 1e-9 {
+            0.0
+        } else {
+            num / (da.sqrt() * db.sqrt())
+        }
+    }
+
+    let mut best_corr = -2.0f32;
+    let mut best_key = String::new();
+    for tonic in 0..12 {
+        let mut shifted = [0.0f32; 12];
+        // Rotate profile so the tonic sits at chromagram index `tonic`.
+        for i in 0..12 {
+            shifted[i] = MAJOR[(i + 12 - tonic) % 12];
+        }
+        let c = pearson(&chroma, &shifted);
+        if c > best_corr {
+            best_corr = c;
+            best_key = NAMES[tonic].to_string();
+        }
+        for i in 0..12 {
+            shifted[i] = MINOR[(i + 12 - tonic) % 12];
+        }
+        let c = pearson(&chroma, &shifted);
+        if c > best_corr {
+            best_corr = c;
+            best_key = format!("{}m", NAMES[tonic]);
+        }
+    }
+
+    // Reject very weak correlations (atonal / drum-only material).
+    if best_corr < 0.45 {
+        return None;
+    }
+    Some(best_key)
+}
+
 /// Duration + BPM → oneshot | loop | phrase.
 fn classify_shape(duration_sec: f32, bpm: Option<f32>) -> &'static str {
     if duration_sec > 0.0 && duration_sec < 1.5 {
@@ -807,18 +925,21 @@ mod tests {
         }
         println!("Discovered {discovered} files");
 
-        // Tag the ones that have no tag row yet.
+        // Tag any sample whose tag row is missing OR was written by an older tagger.
         let pending: Vec<(i64, String, String)> = sqlx::query_as(
             "SELECT sf.id, lr.path, sf.rel_path
              FROM sample_files sf
              JOIN library_roots lr ON lr.id = sf.root_id
              LEFT JOIN sample_tags st ON st.sample_id = sf.id
-             WHERE st.sample_id IS NULL",
+             WHERE st.sample_id IS NULL
+                OR st.tagger_version IS NULL
+                OR st.tagger_version != ?",
         )
+        .bind(TAGGER_VERSION)
         .fetch_all(&pool)
         .await
         .unwrap();
-        println!("Tagging {} files…", pending.len());
+        println!("Tagging {} files (tagger {})…", pending.len(), TAGGER_VERSION);
 
         let mut tagged = 0usize;
         let mut errors = 0usize;
@@ -829,11 +950,12 @@ mod tests {
                 .and_then(|s| s.to_str())
                 .unwrap_or("")
                 .to_string();
-            let (dur, bpm, conf, cat, shape) = match analyze_file(&full) {
+            let (dur, bpm, conf, key_name, cat, shape) = match analyze_file(&full) {
                 Ok(a) => (
                     Some(a.duration_sec),
                     a.bpm,
                     a.bpm_confidence,
+                    a.key_name,
                     a.category,
                     a.shape,
                 ),
@@ -843,6 +965,7 @@ mod tests {
                         None,
                         None,
                         0.0,
+                        None,
                         classify_by_filename(&file_name).map(String::from),
                         "phrase".to_string(),
                     )
@@ -850,13 +973,14 @@ mod tests {
             };
             let _ = sqlx::query(
                 "INSERT OR REPLACE INTO sample_tags
-                 (sample_id, duration_sec, bpm, bpm_confidence, category, shape, tagged_at, tagger_version)
-                 VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?)",
+                 (sample_id, duration_sec, bpm, bpm_confidence, key_name, category, shape, tagged_at, tagger_version)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)",
             )
             .bind(id)
             .bind(dur)
             .bind(bpm)
             .bind(conf)
+            .bind(key_name)
             .bind(cat)
             .bind(shape)
             .bind(TAGGER_VERSION)
