@@ -134,12 +134,33 @@ pub async fn scan_library_roots(
     let state_arc = state.inner().clone();
     let app_clone = app.clone();
     tauri::async_runtime::spawn(async move {
+        // Force WAL checkpoints during the scan so the Bridge plugin (which opens
+        // wmdm.db with immutable=1, no WAL access) sees writes in near-real-time.
+        let ckpt_pool = pool.clone();
+        let ckpt_state = state_arc.clone();
+        let ckpt_handle = tauri::async_runtime::spawn(async move {
+            loop {
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                let still_scanning = ckpt_state.status.lock().await.scanning;
+                if !still_scanning { break; }
+                let _ = sqlx::query("PRAGMA wal_checkpoint(PASSIVE)")
+                    .execute(&ckpt_pool)
+                    .await;
+            }
+        });
+
         if let Err(e) = sample_indexer::scan_all_roots(&pool, state_arc.clone(), &app_clone).await {
             log::error!("scan_all_roots failed: {e}");
         }
         if let Err(e) = sample_indexer::tag_pending(&pool, state_arc.clone(), &app_clone).await {
             log::error!("tag_pending failed: {e}");
         }
+        // Wait for the loop to observe scanning=false (set at the end of tag_pending),
+        // then do one final TRUNCATE checkpoint so the main db is fully up to date.
+        let _ = ckpt_handle.await;
+        let _ = sqlx::query("PRAGMA wal_checkpoint(TRUNCATE)")
+            .execute(&pool)
+            .await;
     });
     Ok(())
 }

@@ -1,6 +1,6 @@
 [package]
 name = "wmdm-desktop"
-version = "1.0.0"
+version = "1.1.0"
 description = "WMDM Desktop App"
 authors = ["WMDM"]
 edition = "2021"
