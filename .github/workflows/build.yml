@@ -8,16 +8,13 @@ on:
 
 jobs:
   build:
+    # macOS builds are produced locally by ~/wmdm-installer/build-and-sign.sh
+    # so we can sign + notarize with the Developer ID certs. GitHub Actions
+    # only builds the Windows installer (unsigned for now — see release notes).
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest
-            target: aarch64-apple-darwin
-            name: macOS-ARM
-          - platform: macos-latest
-            target: x86_64-apple-darwin
-            name: macOS-Intel
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
             name: Windows
@@ -60,7 +57,14 @@ jobs:
           args: --target ${{ matrix.target }}
           tagName: ${{ github.ref_name }}
           releaseName: "WMDM v__VERSION__"
-          releaseBody: "Download the installer for your platform below."
+          releaseBody: |
+            ## Windows installer (BETA — unsigned)
+
+            Download `WMDM_*-setup.exe` below.
+
+            **Heads up on first install:** Windows will show a "Windows protected your PC" SmartScreen warning because we're not yet code-signing our Windows builds. This is normal for software not from large publishers — just click **More info** → **Run anyway**.
+
+            macOS builds are released separately as a signed + notarized `.pkg` installer.
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true
