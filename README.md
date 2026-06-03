@@ -6,7 +6,7 @@ A self-hosted, sample-manager alternative to Splice / Loopcloud — without the 
 
 📥 **[Download for Mac](https://d2xaunaa4wjkl.cloudfront.net/site-assets/app/downloads/WMDM_1.1.0_macOS.pkg)** (signed + notarized, includes Bridge plugin)
 📥 **[Download for Windows](https://d2xaunaa4wjkl.cloudfront.net/site-assets/app/downloads/WMDM_1.1.1_Windows.exe)** (BETA — unsigned, SmartScreen warning)
-🌐 [Landing page](https://www.wmdm.io/app)
+🌐 [Landing page](https://www.wmdm.io/io/app)
 
 ---
 
